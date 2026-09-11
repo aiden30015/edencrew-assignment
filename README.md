@@ -43,7 +43,7 @@ fvm flutter test integration_test -d <기기 id>    # 종합 테스트 (기기 +
 
 ### 테스트
 
-`fvm flutter test` → **43개 모두 통과**
+`fvm flutter test` → **44개 모두 통과**
 
 `fvm flutter test integration_test -d emulator-5554` → **통과** (Android 에뮬레이터 Pixel 10 / API 37, 실제 네이버 응답)
 

@@ -66,4 +66,35 @@ void main() {
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -3000));
     await tester.pumpAndSettle();
   });
+
+  testWidgets('상세 화면에서 별을 누르면 등록 · 해제 토스트가 뜬다', (WidgetTester tester) async {
+    final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          stockRepositoryProvider.overrideWithValue(
+            FakeStockRepository(latency: Duration.zero),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark,
+          navigatorKey: navigator,
+          home: const SizedBox.shrink(),
+        ),
+      ),
+    );
+    // 앱과 같은 경로(DetailScreen.route)로 연다.
+    navigator.currentState!.push(DetailScreen.route('005930'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('관심 등록'));
+    await tester.pump();
+    expect(find.text('관심이 등록되었습니다'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('관심 해제'));
+    await tester.pump();
+    expect(find.text('관심이 해제되었습니다'), findsOneWidget);
+
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+  });
 }

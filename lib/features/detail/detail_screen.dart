@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/state/favorites_notifier.dart';
+import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/retry_view.dart';
 import '../../shared/widgets/visibility_listener.dart';
 import '../../theme/theme.dart';
@@ -18,8 +19,11 @@ import 'widgets/summary_section.dart';
 class DetailScreen extends ConsumerWidget {
   const DetailScreen({super.key, required this.symbol});
 
-  static Route<void> route(String symbol) =>
-      MaterialPageRoute<void>(builder: (_) => DetailScreen(symbol: symbol));
+  // 상세는 하단 탭 화면(MainShell) 위에 쌓이는 화면이라 그쪽 ToastHost 밖에 있다.
+  // 자체 ToastHost로 감싸서 관심 토스트가 이 화면 하단에 뜨게 한다.
+  static Route<void> route(String symbol) => MaterialPageRoute<void>(
+    builder: (_) => ToastHost(child: DetailScreen(symbol: symbol)),
+  );
 
   final String symbol;
 
@@ -42,8 +46,10 @@ class DetailScreen extends ConsumerWidget {
           name: data?.stock.name ?? (detail.isLoading ? null : symbol),
           subtitle: data?.stock.subtitle ?? (detail.isLoading ? symbol : null),
           isFavorite: isFavorite,
-          onFavoriteTap: () =>
-              ref.read(favoritesProvider.notifier).toggle(symbol),
+          onFavoriteTap: () => showFavoriteToast(
+            context,
+            added: ref.read(favoritesProvider.notifier).toggle(symbol),
+          ),
         ),
         body: switch (detail) {
           AsyncValue<DetailState>(:final DetailState value?) => _DetailBody(

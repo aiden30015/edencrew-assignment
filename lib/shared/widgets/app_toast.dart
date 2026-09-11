@@ -4,6 +4,16 @@ import 'package:flutter/material.dart';
 
 import '../../theme/theme.dart';
 
+// 관심 등록 · 해제 토스트. 검색 · 관심 · 상세 화면이 같이 쓴다.
+void showFavoriteToast(BuildContext context, {required bool added}) {
+  showAppToast(
+    context,
+    message: added ? '관심이 등록되었습니다' : '관심이 해제되었습니다',
+    icon: added ? Icons.star_rounded : Icons.star_outline_rounded,
+    iconColor: added ? context.colors.favoriteActive : null,
+  );
+}
+
 // 화면 하단 토스트. 가장 가까운 ToastHost에 띄운다.
 void showAppToast(
   BuildContext context, {
@@ -84,18 +94,25 @@ class ToastHostState extends State<ToastHost> {
         Positioned(
           left: dimens.space4,
           right: dimens.space4,
-          bottom: dimens.space3,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final _Toast toast in _toasts)
-                _AnimatedToast(
-                  key: ValueKey<int>(toast.id),
-                  toast: toast,
-                  onTap: () => _startLeaving(toast),
-                  onRemoved: () => _remove(toast),
-                ),
-            ],
+          // 하단 탭 화면에서는 Scaffold가 body의 하단 여백을 0으로 주므로 탭 바 바로 위,
+          // 상세처럼 화면 전체를 감쌀 때는 제스처 바 같은 시스템 영역 위에 뜬다.
+          bottom: dimens.space3 + MediaQuery.paddingOf(context).bottom,
+          // Scaffold 바깥을 감쌀 때도 글자 스타일이 적용되도록 투명 Material을 둔다.
+          // (Material 조상이 없으면 Text에 노란 밑줄이 생긴다)
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final _Toast toast in _toasts)
+                  _AnimatedToast(
+                    key: ValueKey<int>(toast.id),
+                    toast: toast,
+                    onTap: () => _startLeaving(toast),
+                    onRemoved: () => _remove(toast),
+                  ),
+              ],
+            ),
           ),
         ),
       ],

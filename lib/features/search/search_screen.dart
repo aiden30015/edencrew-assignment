@@ -48,15 +48,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   void _toggleFavorite(String symbol) {
-    final bool added = ref
-        .read(searchViewModelProvider.notifier)
-        .toggleFavorite(symbol);
-
-    showAppToast(
+    showFavoriteToast(
       context,
-      message: added ? '관심이 등록되었습니다' : '관심이 해제되었습니다',
-      icon: added ? Icons.star_rounded : Icons.star_outline_rounded,
-      iconColor: added ? context.colors.favoriteActive : null,
+      added: ref.read(searchViewModelProvider.notifier).toggleFavorite(symbol),
     );
   }
 

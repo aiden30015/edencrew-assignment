@@ -61,11 +61,9 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
   }
 
   void _remove(String symbol) {
-    ref.read(favoritesProvider.notifier).toggle(symbol);
-    showAppToast(
+    showFavoriteToast(
       context,
-      message: '관심이 해제되었습니다',
-      icon: Icons.star_outline_rounded,
+      added: ref.read(favoritesProvider.notifier).toggle(symbol),
     );
   }
 

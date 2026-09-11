@@ -25,6 +25,7 @@ class EdencrewAssignmentApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '이든크루 평가 과제',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       home: const MainShell(),
     );

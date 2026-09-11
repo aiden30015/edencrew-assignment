@@ -28,6 +28,23 @@ void main() {
     expect(repo.dailyPages, hasLength(6));
   });
 
+  test('날짜가 바뀌면 받은 페이지를 버리고 다시 받는다', () async {
+    final RecordingStockRepository repo = RecordingStockRepository();
+    DateTime now = DateTime(2026, 9, 11, 15);
+    final DailyPriceLoader loader = DailyPriceLoader(repo, now: () => now);
+
+    await _load(loader, 20);
+    expect(repo.dailyPages, <int>[1, 2]);
+
+    now = DateTime(2026, 9, 11, 23, 59);
+    await _load(loader, 20);
+    expect(repo.dailyPages, <int>[1, 2]);
+
+    now = DateTime(2026, 9, 12, 9);
+    await _load(loader, 20);
+    expect(repo.dailyPages, <int>[1, 2, 1, 2]);
+  });
+
   test('lastPage보다 큰 페이지는 요청하지 않는다', () async {
     final RecordingStockRepository repo = RecordingStockRepository();
     final DailyPriceLoader loader = DailyPriceLoader(repo);

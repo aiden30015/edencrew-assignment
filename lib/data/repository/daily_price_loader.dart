@@ -9,23 +9,41 @@ import 'stock_repository.dart';
 // 일별 시세를 필요한 페이지만 받고, 받은 페이지는 재사용한다.
 // 상세 화면의 차트 · 일별 시세 표에서 쓴다.
 class DailyPriceLoader {
-  DailyPriceLoader(this._repository);
+  DailyPriceLoader(this._repository, {DateTime Function()? now})
+    : _now = now ?? DateTime.now;
 
   static const int pageSize = 10;
 
   // 생성자로 주입받아 테스트에서 가짜 저장소로 바꿀 수 있다. 밖에서는 load()만 쓰도록 private.
   final StockRepository _repository;
 
+  // 테스트에서 날짜를 바꿔 끼우기 위한 시계.
+  final DateTime Function() _now;
+
   // 종목코드 → 페이지 번호 → 요청 Future.
   // 결과가 아니라 Future를 저장해서, 받는 중인 페이지를 또 요청해도 중복 요청을 보내지 않는다.
   final Map<String, Map<int, Future<Result<DailyPricePageDto>>>> _cache =
       <String, Map<int, Future<Result<DailyPricePageDto>>>>{};
+
+  // 종목코드 → 캐시를 만든 날짜.
+  final Map<String, DateTime> _cachedOn = <String, DateTime>{};
 
   // 최신 날짜부터 딱 [tradingDays]일치를 돌려준다.
   Future<Result<List<DailyPriceDto>>> load(
     String symbol,
     int tradingDays,
   ) async {
+    // 날짜가 바뀌면 이 종목의 캐시를 통째로 버린다.
+    // 새 거래일 행이 1페이지 맨 앞에 붙으면서 모든 페이지가 한 칸씩 밀리기 때문에,
+    // 1페이지만 새로 받으면 옛 페이지와 이어지는 곳에서 날짜가 겹치거나 빠진다.
+    // ponytail: 기기 날짜 기준. 같은 날 안에서는 장중 오늘 행이 처음 받은 값에 머문다.
+    final DateTime now = _now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    if (_cachedOn[symbol] != today) {
+      _cache.remove(symbol);
+      _cachedOn[symbol] = today;
+    }
+
     // 이 종목의 페이지 캐시가 없으면 빈 Map으로 만든다.
     final Map<int, Future<Result<DailyPricePageDto>>> pages = _cache
         .putIfAbsent(symbol, () => <int, Future<Result<DailyPricePageDto>>>{});

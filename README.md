@@ -11,7 +11,8 @@
 fvm flutter pub get
 fvm flutter run          # Android / iOS / 데스크톱. 웹(Chrome)은 네이버 CORS 때문에 동작하지 않습니다.
 fvm flutter analyze
-fvm flutter test
+fvm flutter test                                  # 단위 · 위젯 테스트 (네트워크 없음)
+fvm flutter test integration_test -d <기기 id>    # 종합 테스트 (기기 + 실제 네이버 응답)
 ```
 
 - 확인한 플랫폼과 기기: Android 에뮬레이터 (Pixel 10, Android 17 / API 37), 실제 네이버 데이터로 관심 · 검색 · 상세 전체 흐름 확인
@@ -44,6 +45,12 @@ fvm flutter test
 
 `fvm flutter test` → **43개 모두 통과**
 
+`fvm flutter test integration_test -d emulator-5554` → **통과** (Android 에뮬레이터 Pixel 10 / API 37, 실제 네이버 응답)
+
+- 종합 테스트(`integration_test/app_flow_test.dart`)는 실제 기기에서 앱 전체를 한 흐름으로 조작합니다. 첫 실행 빈 상태 → 검색 전 상태 → 결과 없음 문구 · 지우기 → 삼성전자 검색 · 관심 등록 토스트 → 관심 목록에 시세 표시 → 정렬 변경 → 상세 1개월(20일) → 1년(245일) → 상세에서 해제 → 관심 빈 상태 · 검색 화면 별 동기화.
+- 시세 숫자는 매번 달라서 값이 아니라 화면 상태 · 표기 형식 · 캔들 개수만 확인합니다. 기기 저장소와 섞이지 않게 빈 저장소로 시작합니다.
+- 단위 · 위젯 테스트는 네트워크 없이 `test/mocks/`의 가짜 저장소(`FakeStockRepository`, 요청을 기록하는 `RecordingStockRepository`)로 돌립니다.
+
 - 네이버 응답 파싱: `assets/mock/`에 저장한 실제 응답 4종(일별 시세 HTML은 EUC-KR 원본 그대로)으로 검증. 일별 시세는 전일비 부호가 종가 차이와 맞는지까지 확인
 - 일별 시세 페이지를 필요한 만큼만 받고 재사용하는지, 실패 페이지를 다시 받는지, 다시 들어올 때 1페이지만 새로 받고 날짜가 바뀌었으면 전부 다시 받는지
 - 정렬(시세 없는 행 위치 포함, 재실행 후 유지), 검색 응답 순서 역전, 자동 갱신 주기 · 정지 조건, 토스트 스택, 로컬 저장, 화면 위젯 테스트
@@ -53,7 +60,7 @@ fvm flutter test
 ### 상태관리: Riverpod 3
 
 - 관심 목록은 세 화면이 같이 보는 상태라 전역에서 하나로 관리해야 합니다. `NotifierProvider` 하나로 동기화 요구사항이 해결됩니다.
-- 저장소를 provider로 주입해서 테스트에서 `overrideWithValue(FakeStockRepository())`로 바꿔 끼웁니다. 네트워크 없이 모든 화면을 테스트할 수 있습니다.
+- 저장소를 provider로 주입해서 테스트에서 `overrideWithValue(FakeStockRepository())`(`test/mocks/`)로 바꿔 끼웁니다. 네트워크 없이 모든 화면을 테스트할 수 있습니다.
 - 상세 화면은 `autoDispose.family`(종목코드별)라서 화면을 나가면 상태와 자동 갱신 타이머가 같이 정리됩니다.
 - 탭 인덱스처럼 한 화면에서만 쓰는 UI 상태는 `StatefulWidget`에 둡니다.
 

@@ -62,13 +62,56 @@ class WatchlistAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
           SizedBox(width: dimens.space4),
-          HeaderIconButton(
-            icon: Icons.sync,
-            color: colors.textSecondary,
-            onTap: onRefresh,
-            tooltip: '새로고침',
-          ),
+          _RefreshButton(onTap: onRefresh),
         ],
+      ),
+    );
+  }
+}
+
+// 누르면 아이콘이 한 바퀴 돌아서 새로고침이 시작됐다는 걸 바로 보여준다.
+class _RefreshButton extends StatefulWidget {
+  const _RefreshButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  State<_RefreshButton> createState() => _RefreshButtonState();
+}
+
+class _RefreshButtonState extends State<_RefreshButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _turns = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 600),
+  );
+
+  @override
+  void dispose() {
+    _turns.dispose();
+    super.dispose();
+  }
+
+  void _onTap() {
+    _turns.forward(from: 0);
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: '새로고침',
+      child: InkWell(
+        onTap: _onTap,
+        radius: 20,
+        child: RotationTransition(
+          turns: CurvedAnimation(parent: _turns, curve: Curves.easeInOut),
+          child: Icon(
+            Icons.sync,
+            size: context.dimens.iconMd,
+            color: context.colors.textSecondary,
+          ),
+        ),
       ),
     );
   }

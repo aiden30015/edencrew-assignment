@@ -14,7 +14,7 @@ fvm flutter analyze
 fvm flutter test
 ```
 
-- 확인한 플랫폼과 기기: <!-- TODO: 실행 확인한 기기를 적어 주세요 (예: Android 에뮬레이터 API 37, Galaxy M53 Android 16) -->
+- 확인한 플랫폼과 기기: Android 에뮬레이터 (Pixel 10, Android 17 / API 37), 실제 네이버 데이터로 관심 · 검색 · 상세 전체 흐름 확인
 - 폰트: 스타터에 등록된 `Noto Sans KR`을 그대로 사용합니다.
 
 ## 구현 범위

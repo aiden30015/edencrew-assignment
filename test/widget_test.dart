@@ -1,4 +1,6 @@
 import 'package:edencrew_assignment_starter/app/widgets/bottom_nav_bar.dart';
+import 'package:edencrew_assignment_starter/data/repository/fake_stock_repository.dart';
+import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 import 'package:edencrew_assignment_starter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +9,14 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   testWidgets('하단 탭으로 관심 / 검색을 전환한다', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const ProviderScope(child: EdencrewAssignmentApp()),
+      ProviderScope(
+        overrides: [
+          stockRepositoryProvider.overrideWithValue(
+            FakeStockRepository(latency: Duration.zero),
+          ),
+        ],
+        child: const EdencrewAssignmentApp(),
+      ),
     );
 
     Finder inNav(Finder f) =>

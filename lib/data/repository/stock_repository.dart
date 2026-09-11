@@ -5,9 +5,9 @@ import '../dto/autocomplete_item_dto.dart';
 import '../dto/daily_price_dto.dart';
 import '../dto/realtime_quote_dto.dart';
 import '../dto/stock_meta_dto.dart';
-import 'fake_stock_repository.dart';
+import 'naver_stock_repository.dart';
 
-// 네이버 주식 API 4개에 대응하는 저장소. 지금은 FakeStockRepository를 쓴다.
+// 네이버 주식 API 4개에 대응하는 저장소. 앱은 NaverStockRepository, 테스트는 FakeStockRepository를 쓴다.
 // 실패는 예외로 던지지 않고 Failure로 돌려준다.
 abstract interface class StockRepository {
   // 국내 주식 · 6자리 종목코드만 남긴 검색 결과.
@@ -27,4 +27,8 @@ abstract interface class StockRepository {
 }
 
 final Provider<StockRepository> stockRepositoryProvider =
-    Provider<StockRepository>((Ref ref) => FakeStockRepository());
+    Provider<StockRepository>((Ref ref) {
+      final NaverStockRepository repository = NaverStockRepository();
+      ref.onDispose(repository.close);
+      return repository;
+    });

@@ -2,6 +2,7 @@ import 'package:edencrew_assignment_starter/data/repository/fake_stock_repositor
 import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 import 'package:edencrew_assignment_starter/main.dart';
 import 'package:edencrew_assignment_starter/shared/state/favorites_notifier.dart';
+import 'package:edencrew_assignment_starter/shared/state/preferences_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

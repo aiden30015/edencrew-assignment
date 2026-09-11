@@ -14,6 +14,9 @@ class SearchResults extends StatelessWidget {
     required this.onTap,
     required this.onFavoriteTap,
     required this.onRetry,
+    required this.recentSearches,
+    required this.onRecentTap,
+    required this.onRecentRemove,
   });
 
   static const int _maxQueryLength = 20;
@@ -25,10 +28,22 @@ class SearchResults extends StatelessWidget {
   final ValueChanged<String> onFavoriteTap;
   final VoidCallback onRetry;
 
+  final List<String> recentSearches;
+  final ValueChanged<String> onRecentTap;
+  final ValueChanged<String> onRecentRemove;
+
   @override
   Widget build(BuildContext context) {
     final AppColors colors = context.colors;
 
+    // 검색 전: 최근 검색어가 있으면 목록, 없으면 시안의 빈 상태.
+    if (state.query.isEmpty && recentSearches.isNotEmpty) {
+      return _RecentSearches(
+        queries: recentSearches,
+        onTap: onRecentTap,
+        onRemove: onRecentRemove,
+      );
+    }
     if (state.query.isEmpty) {
       return const EmptyState(
         icon: Icons.search,
@@ -90,6 +105,81 @@ class SearchResults extends StatelessWidget {
     final Characters chars = query.characters;
     if (chars.length <= _maxQueryLength) return query;
     return '${chars.take(_maxQueryLength)}…';
+  }
+}
+
+class _RecentSearches extends StatelessWidget {
+  const _RecentSearches({
+    required this.queries,
+    required this.onTap,
+    required this.onRemove,
+  });
+
+  static const double _rowHeight = 48;
+
+  final List<String> queries;
+  final ValueChanged<String> onTap;
+  final ValueChanged<String> onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppColors colors = context.colors;
+    final AppDimens dimens = context.dimens;
+
+    return ListView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            dimens.space4,
+            dimens.space2,
+            dimens.space4,
+            dimens.space1,
+          ),
+          child: Text(
+            '최근 검색어',
+            style: AppTypography.bold13.copyWith(color: colors.textSecondary),
+          ),
+        ),
+        for (final String query in queries)
+          InkWell(
+            key: ValueKey<String>(query),
+            onTap: () => onTap(query),
+            child: SizedBox(
+              height: _rowHeight,
+              child: Padding(
+                padding: EdgeInsets.only(left: dimens.space4),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search,
+                      size: dimens.iconSm,
+                      color: colors.textTertiary,
+                    ),
+                    SizedBox(width: dimens.space3),
+                    Expanded(
+                      child: Text(
+                        query,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.regular13.copyWith(
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: '최근 검색어 삭제',
+                      onPressed: () => onRemove(query),
+                      iconSize: dimens.iconSm,
+                      icon: Icon(Icons.close, color: colors.textTertiary),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 

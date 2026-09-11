@@ -1,6 +1,7 @@
 import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 import 'package:edencrew_assignment_starter/features/watchlist/watchlist_view_model.dart';
 import 'package:edencrew_assignment_starter/shared/state/favorites_notifier.dart';
+import 'package:edencrew_assignment_starter/shared/state/preferences_provider.dart';
 import 'package:edencrew_assignment_starter/shared/utils/polling.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

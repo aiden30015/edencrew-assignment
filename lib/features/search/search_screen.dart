@@ -5,6 +5,7 @@ import '../../shared/state/favorites_notifier.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../theme/theme.dart';
 import '../detail/detail_screen.dart';
+import 'recent_searches_notifier.dart';
 import 'search_view_model.dart';
 import 'widgets/search_field.dart';
 import 'widgets/search_results.dart';
@@ -31,8 +32,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   void _openDetail(String symbol) {
+    ref
+        .read(recentSearchesProvider.notifier)
+        .add(ref.read(searchViewModelProvider).query);
     FocusScope.of(context).unfocus();
     Navigator.of(context).push(DetailScreen.route(symbol));
+  }
+
+  void _searchRecent(String query) {
+    _controller.value = TextEditingValue(
+      text: query,
+      selection: TextSelection.collapsed(offset: query.length),
+    );
+    ref.read(searchViewModelProvider.notifier).onQueryChanged(query);
   }
 
   void _toggleFavorite(String symbol) {
@@ -53,6 +65,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final AppDimens dimens = context.dimens;
     final SearchState state = ref.watch(searchViewModelProvider);
     final List<String> favorites = ref.watch(favoritesProvider);
+    final List<String> recentSearches = ref.watch(recentSearchesProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -81,6 +94,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 onTap: _openDetail,
                 onFavoriteTap: _toggleFavorite,
                 onRetry: ref.read(searchViewModelProvider.notifier).retry,
+                recentSearches: recentSearches,
+                onRecentTap: _searchRecent,
+                onRecentRemove: ref
+                    .read(recentSearchesProvider.notifier)
+                    .remove,
               ),
             ),
           ],

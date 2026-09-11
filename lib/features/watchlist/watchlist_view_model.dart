@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/dto/realtime_quote_dto.dart';
 import '../../data/dto/stock_meta_dto.dart';
 import '../../data/repository/stock_repository.dart';
 import '../../shared/state/favorites_notifier.dart';
+import '../../shared/state/preferences_provider.dart';
 import '../../shared/utils/polling.dart';
 import '../../shared/utils/result.dart';
 import 'models/watchlist_item.dart';
@@ -46,10 +48,20 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
 
   late final Polling _polling = Polling(_fetchQuotes);
 
+  static const String sortKey = 'watchlistSort';
+  static const String reversedKey = 'watchlistSortReversed';
+
   @override
   WatchlistState build() {
     _repository = ref.watch(stockRepositoryProvider);
     ref.onDispose(_polling.dispose);
+
+    // 마지막으로 고른 정렬 기준과 방향을 불러온다. 저장값이 없거나 모르는 값이면 기본값.
+    final SharedPreferences? preferences = ref.read(preferencesProvider);
+    _sort =
+        WatchlistSort.values.asNameMap()[preferences?.getString(sortKey)] ??
+        WatchlistSort.name;
+    _reversed = preferences?.getBool(reversedKey) ?? false;
 
     ref.listen<List<String>>(
       favoritesProvider,
@@ -69,6 +81,9 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
   void changeSort(WatchlistSort sort) {
     _reversed = sort == _sort && !_reversed;
     _sort = sort;
+    ref.read(preferencesProvider)
+      ?..setString(sortKey, sort.name)
+      ..setBool(reversedKey, _reversed);
     _emit();
   }
 

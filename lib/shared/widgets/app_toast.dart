@@ -1,38 +1,195 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../theme/theme.dart';
 
+// 화면 하단 토스트. 가장 가까운 ToastHost에 띄운다.
 void showAppToast(
   BuildContext context, {
   required String message,
   IconData? icon,
   Color? iconColor,
 }) {
-  final AppColors colors = context.colors;
-  final AppDimens dimens = context.dimens;
+  context.findAncestorStateOfType<ToastHostState>()?.show(
+    message: message,
+    icon: icon,
+    iconColor: iconColor,
+  );
+}
 
-  ScaffoldMessenger.of(context)
-    ..removeCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        margin: EdgeInsets.fromLTRB(
-          dimens.space4,
-          0,
-          dimens.space4,
-          dimens.space3,
+// 토스트를 child 위 하단에 쌓아서 보여준다.
+// - 최대 3개. 새 토스트가 맨 아래에 붙고, 넘치면 가장 오래된 것부터 바로 지운다.
+// - 각자 2초 뒤에 사라지고, 탭하면 바로 닫힌다.
+// SnackBar는 한 번에 하나만 보여줄 수 있어서 쌓는 동작을 위해 직접 구현했다.
+class ToastHost extends StatefulWidget {
+  const ToastHost({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<ToastHost> createState() => ToastHostState();
+}
+
+class ToastHostState extends State<ToastHost> {
+  static const int maxCount = 3;
+  static const Duration duration = Duration(seconds: 2);
+
+  final List<_Toast> _toasts = <_Toast>[];
+  int _nextId = 0;
+
+  void show({required String message, IconData? icon, Color? iconColor}) {
+    final _Toast toast = _Toast(
+      id: _nextId++,
+      message: message,
+      icon: icon,
+      iconColor: iconColor,
+    );
+    toast.timer = Timer(duration, () => _startLeaving(toast));
+    setState(() {
+      _toasts.add(toast);
+      while (_toasts.length > maxCount) {
+        _toasts.removeAt(0).timer?.cancel();
+      }
+    });
+  }
+
+  // 사라지는 애니메이션이 끝나면 _remove가 불린다.
+  void _startLeaving(_Toast toast) {
+    toast.timer?.cancel();
+    if (!mounted || !_toasts.contains(toast)) return;
+    setState(() => toast.leaving = true);
+  }
+
+  void _remove(_Toast toast) {
+    if (!mounted) return;
+    setState(() => _toasts.remove(toast));
+  }
+
+  @override
+  void dispose() {
+    for (final _Toast toast in _toasts) {
+      toast.timer?.cancel();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AppDimens dimens = context.dimens;
+
+    return Stack(
+      children: [
+        widget.child,
+        Positioned(
+          left: dimens.space4,
+          right: dimens.space4,
+          bottom: dimens.space3,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final _Toast toast in _toasts)
+                _AnimatedToast(
+                  key: ValueKey<int>(toast.id),
+                  toast: toast,
+                  onTap: () => _startLeaving(toast),
+                  onRemoved: () => _remove(toast),
+                ),
+            ],
+          ),
         ),
-        padding: EdgeInsets.zero,
-        content: _ToastContent(
-          message: message,
-          icon: icon,
-          iconColor: iconColor ?? colors.textSecondary,
+      ],
+    );
+  }
+}
+
+class _Toast {
+  _Toast({
+    required this.id,
+    required this.message,
+    required this.icon,
+    required this.iconColor,
+  });
+
+  final int id;
+  final String message;
+  final IconData? icon;
+  final Color? iconColor;
+  Timer? timer;
+  bool leaving = false;
+}
+
+// 아래에서 올라오며 나타나고, 사라질 때는 흐려지면서 자리가 줄어든다.
+class _AnimatedToast extends StatefulWidget {
+  const _AnimatedToast({
+    super.key,
+    required this.toast,
+    required this.onTap,
+    required this.onRemoved,
+  });
+
+  final _Toast toast;
+  final VoidCallback onTap;
+  final VoidCallback onRemoved;
+
+  @override
+  State<_AnimatedToast> createState() => _AnimatedToastState();
+}
+
+class _AnimatedToastState extends State<_AnimatedToast>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 200),
+  )..forward();
+
+  late final Animation<double> _curve = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.easeOut,
+  );
+
+  @override
+  void didUpdateWidget(_AnimatedToast oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.toast.leaving && _controller.status != AnimationStatus.reverse) {
+      _controller.reverse().whenComplete(widget.onRemoved);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizeTransition(
+      sizeFactor: _curve,
+      alignment: Alignment.topCenter,
+      child: FadeTransition(
+        opacity: _curve,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.3),
+            end: Offset.zero,
+          ).animate(_curve),
+          child: Padding(
+            padding: EdgeInsets.only(top: context.dimens.space2),
+            child: GestureDetector(
+              onTap: widget.onTap,
+              child: _ToastContent(
+                message: widget.toast.message,
+                icon: widget.toast.icon,
+                iconColor:
+                    widget.toast.iconColor ?? context.colors.textSecondary,
+              ),
+            ),
+          ),
         ),
       ),
     );
+  }
 }
 
 class _ToastContent extends StatelessWidget {

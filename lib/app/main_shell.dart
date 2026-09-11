@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../features/search/search_screen.dart';
 import '../features/watchlist/watchlist_screen.dart';
+import '../shared/widgets/app_toast.dart';
 import 'widgets/bottom_nav_bar.dart';
 
 // 관심 / 검색 하단 탭을 가진 최상위 화면.
@@ -30,12 +31,15 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       // 안 보이는 탭은 TickerMode를 꺼서 애니메이션과 시세 자동 갱신을 멈춘다.
-      body: IndexedStack(
-        index: _index,
-        children: [
-          TickerMode(enabled: _index == 0, child: const WatchlistScreen()),
-          TickerMode(enabled: _index == 1, child: const SearchScreen()),
-        ],
+      // 토스트는 탭 바 바로 위에 뜨도록 body를 ToastHost로 감싼다.
+      body: ToastHost(
+        child: IndexedStack(
+          index: _index,
+          children: [
+            TickerMode(enabled: _index == 0, child: const WatchlistScreen()),
+            TickerMode(enabled: _index == 1, child: const SearchScreen()),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavBar(
         items: _items,

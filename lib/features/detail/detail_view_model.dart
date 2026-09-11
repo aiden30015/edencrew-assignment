@@ -75,22 +75,23 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
       _loadDaily(period),
     ).wait;
 
-    return switch ((meta, quotes, daily)) {
-      (
-        Success(value: final m),
-        Success(value: final q),
-        Success(value: final d),
-      )
+    // 종목 정보 · 현재가가 없으면 화면을 그릴 수 없어 전체 실패.
+    // 일별 시세만 실패하면 헤더 · 요약은 보여주고 차트 자리에 '다시 시도'를 띄운다.
+    final List<DailyPriceDto> days = switch (daily) {
+      Success(value: final d) => d,
+      Failure() => const <DailyPriceDto>[],
+    };
+    return switch ((meta, quotes)) {
+      (Success(value: final m), Success(value: final q))
           when q[symbol] != null =>
         DetailState(
           stock: StockDetail.from(m, q[symbol]!),
           period: period,
-          candles: _candles(d),
-          rows: _rows(d),
+          candles: _candles(days),
+          rows: _rows(days),
+          hasPeriodError: daily is Failure,
         ),
-      (Failure(:final error), _, _) ||
-      (_, Failure(:final error), _) ||
-      (_, _, Failure(:final error)) => throw error,
+      (Failure(:final error), _) || (_, Failure(:final error)) => throw error,
       _ => throw StateError('no quote: $symbol'),
     };
   }

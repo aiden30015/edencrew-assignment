@@ -4,6 +4,7 @@ import 'package:edencrew_assignment_starter/features/detail/detail_view_model.da
 import 'package:edencrew_assignment_starter/features/detail/models/candle.dart';
 import 'package:edencrew_assignment_starter/features/detail/models/chart_period.dart';
 import 'package:edencrew_assignment_starter/shared/utils/price_direction.dart';
+import 'package:edencrew_assignment_starter/shared/utils/result.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -18,6 +19,14 @@ DailyPriceDto _day({required int open, required int close}) => DailyPriceDto(
   lowPrice: open - 100,
   accumulatedTradingVolume: 1000,
 );
+
+class _DailyFailingRepository extends RecordingStockRepository {
+  @override
+  Future<Result<DailyPricePageDto>> fetchDailyPrices(String symbol, int page) =>
+      Future<Result<DailyPricePageDto>>.value(
+        Failure<DailyPricePageDto>(StateError('offline')),
+      );
+}
 
 void main() {
   test('기간 전환은 일별 시세만 필요한 페이지만큼 더 받고, 시세는 다시 받지 않는다', () async {
@@ -58,6 +67,23 @@ void main() {
 
     await expectLater(container.read(provider.future), throwsStateError);
     expect(container.read(provider).hasError, isTrue);
+  });
+
+  test('일별 시세만 실패하면 현재가는 보여주고 기간 오류로 표시한다', () async {
+    final ProviderContainer container = ProviderContainer(
+      overrides: [
+        stockRepositoryProvider.overrideWithValue(_DailyFailingRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    final AsyncNotifierProvider<DetailViewModel, DetailState> provider =
+        detailViewModelProvider('005930');
+    container.listen(provider, (_, _) {});
+
+    final DetailState state = await container.read(provider.future);
+    expect(state.stock.name, '삼성전자');
+    expect(state.hasPeriodError, isTrue);
+    expect(state.candles, isEmpty);
   });
 
   test('캔들 방향은 시가 대비 종가로 정한다', () {

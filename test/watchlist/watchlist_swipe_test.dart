@@ -1,4 +1,3 @@
-import 'package:edencrew_assignment_starter/data/repository/fake_stock_repository.dart';
 import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 import 'package:edencrew_assignment_starter/main.dart';
 import 'package:edencrew_assignment_starter/shared/state/favorites_notifier.dart';
@@ -7,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../mocks/fake_stock_repository.dart';
 
 void main() {
   testWidgets('관심 행을 왼쪽으로 밀면 해제되고 토스트가 뜬다', (WidgetTester tester) async {

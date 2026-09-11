@@ -1,4 +1,3 @@
-import 'package:edencrew_assignment_starter/data/repository/fake_stock_repository.dart';
 import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 import 'package:edencrew_assignment_starter/features/detail/detail_screen.dart';
 import 'package:edencrew_assignment_starter/features/detail/widgets/candle_chart.dart';
@@ -7,6 +6,8 @@ import 'package:edencrew_assignment_starter/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../mocks/fake_stock_repository.dart';
 
 void main() {
   testWidgets('상세 화면이 그려지고 1년 탭으로 바꿔도 레이아웃이 깨지지 않는다', (

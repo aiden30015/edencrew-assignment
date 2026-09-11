@@ -3,7 +3,7 @@ import 'package:edencrew_assignment_starter/data/repository/daily_price_loader.d
 import 'package:edencrew_assignment_starter/shared/utils/result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../testing/recording_stock_repository.dart';
+import 'mocks/recording_stock_repository.dart';
 
 Future<List<DailyPriceDto>> _load(
   DailyPriceLoader loader,

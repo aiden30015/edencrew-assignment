@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../testing/recording_stock_repository.dart';
+import 'mocks/recording_stock_repository.dart';
 
 // testWidgets 안에서는 Timer가 가짜 시계로 돌아서 tester.pump로 시간을 넘길 수 있다.
 void main() {

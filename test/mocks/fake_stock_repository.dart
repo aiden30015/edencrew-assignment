@@ -1,13 +1,13 @@
 import 'dart:math';
 
-import '../../shared/utils/result.dart';
-import '../dto/autocomplete_item_dto.dart';
-import '../dto/daily_price_dto.dart';
-import '../dto/realtime_quote_dto.dart';
-import '../dto/stock_meta_dto.dart';
-import 'stock_repository.dart';
+import 'package:edencrew_assignment_starter/shared/utils/result.dart';
+import 'package:edencrew_assignment_starter/data/dto/autocomplete_item_dto.dart';
+import 'package:edencrew_assignment_starter/data/dto/daily_price_dto.dart';
+import 'package:edencrew_assignment_starter/data/dto/realtime_quote_dto.dart';
+import 'package:edencrew_assignment_starter/data/dto/stock_meta_dto.dart';
+import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 
-// 서버 연결 전에 쓰는 샘플 저장소. 응답 모양은 실제 DTO와 같다.
+// 테스트용 샘플 저장소. 네트워크 없이 응답 모양만 실제 DTO와 같게 돌려준다.
 // 로딩 스켈레톤을 확인할 수 있게 응답마다 [latency]만큼 지연을 둔다.
 class FakeStockRepository implements StockRepository {
   FakeStockRepository({this.latency = const Duration(milliseconds: 600)});

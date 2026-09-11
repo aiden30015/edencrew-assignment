@@ -1,6 +1,6 @@
 import 'package:edencrew_assignment_starter/data/dto/daily_price_dto.dart';
 import 'package:edencrew_assignment_starter/data/dto/realtime_quote_dto.dart';
-import 'package:edencrew_assignment_starter/data/repository/fake_stock_repository.dart';
+import 'fake_stock_repository.dart';
 import 'package:edencrew_assignment_starter/shared/utils/result.dart';
 
 /// 요청을 기록하는 테스트용 저장소. 응답은 [FakeStockRepository]와 같고 지연이 없습니다.

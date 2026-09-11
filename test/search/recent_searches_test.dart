@@ -1,4 +1,3 @@
-import 'package:edencrew_assignment_starter/data/repository/fake_stock_repository.dart';
 import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 import 'package:edencrew_assignment_starter/features/search/recent_searches_notifier.dart';
 import 'package:edencrew_assignment_starter/main.dart';
@@ -7,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../mocks/fake_stock_repository.dart';
 
 void main() {
   test('최신이 앞, 최대 5개, 같은 검색어는 맨 앞으로 올리고 기기에 저장한다', () async {

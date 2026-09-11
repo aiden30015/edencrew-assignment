@@ -8,7 +8,7 @@ import 'package:edencrew_assignment_starter/shared/utils/result.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../testing/recording_stock_repository.dart';
+import '../mocks/recording_stock_repository.dart';
 
 DailyPriceDto _day({required int open, required int close}) => DailyPriceDto(
   localDate: '20260327',

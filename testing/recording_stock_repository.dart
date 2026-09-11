@@ -18,9 +18,7 @@ class RecordingStockRepository extends FakeStockRepository {
   }
 
   @override
-  Future<Result<Map<String, RealtimeQuoteDto>>> fetchQuotes(
-    List<String> symbols,
-  ) {
+  Future<Result<RealtimeQuotesDto>> fetchQuotes(List<String> symbols) {
     quoteCalls++;
     return super.fetchQuotes(symbols);
   }

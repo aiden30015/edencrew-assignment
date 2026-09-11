@@ -29,9 +29,13 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // 안 보이는 탭은 TickerMode를 꺼서 애니메이션과 시세 자동 갱신을 멈춘다.
       body: IndexedStack(
         index: _index,
-        children: const [WatchlistScreen(), SearchScreen()],
+        children: [
+          TickerMode(enabled: _index == 0, child: const WatchlistScreen()),
+          TickerMode(enabled: _index == 1, child: const SearchScreen()),
+        ],
       ),
       bottomNavigationBar: BottomNavBar(
         items: _items,

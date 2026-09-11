@@ -146,16 +146,18 @@ void main() {
       }),
     );
 
-    final Result<Map<String, RealtimeQuoteDto>> result = await repository
-        .fetchQuotes(<String>['005930', '000660']);
+    final Result<RealtimeQuotesDto> result = await repository.fetchQuotes(
+      <String>['005930', '000660'],
+    );
 
     expect(requests, hasLength(1));
     expect(
       requests.single.queryParameters['query'],
       'SERVICE_ITEM:005930,000660',
     );
-    final Map<String, RealtimeQuoteDto> quotes =
-        (result as Success<Map<String, RealtimeQuoteDto>>).value;
+    final RealtimeQuotesDto dto = (result as Success<RealtimeQuotesDto>).value;
+    expect(dto.pollingInterval, const Duration(milliseconds: 7000));
+    final Map<String, RealtimeQuoteDto> quotes = dto.quotes;
     expect(quotes.keys, containsAll(<String>['005930', '000660']));
     final RealtimeQuoteDto samsung = quotes['005930']!;
     expect(samsung.currentPrice, greaterThan(0));
@@ -172,11 +174,12 @@ void main() {
       }),
     );
 
-    final Result<Map<String, RealtimeQuoteDto>> result = await repository
-        .fetchQuotes(<String>[]);
+    final Result<RealtimeQuotesDto> result = await repository.fetchQuotes(
+      <String>[],
+    );
 
     expect(calls, 0);
-    expect((result as Success<Map<String, RealtimeQuoteDto>>).value, isEmpty);
+    expect((result as Success<RealtimeQuotesDto>).value.quotes, isEmpty);
   });
 
   test('검색: 국내 주식 · 6자리 종목코드만 남긴다', () async {

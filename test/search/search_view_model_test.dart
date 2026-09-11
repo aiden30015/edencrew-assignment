@@ -24,9 +24,8 @@ class _ManualSearchRepository implements StockRepository {
       (pending[query] = Completer<Result<List<AutocompleteItemDto>>>()).future;
 
   @override
-  Future<Result<Map<String, RealtimeQuoteDto>>> fetchQuotes(
-    List<String> symbols,
-  ) => throw UnimplementedError();
+  Future<Result<RealtimeQuotesDto>> fetchQuotes(List<String> symbols) =>
+      throw UnimplementedError();
 
   @override
   Future<Result<StockMetaDto>> fetchMeta(String symbol) =>

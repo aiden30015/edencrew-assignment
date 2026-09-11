@@ -14,10 +14,7 @@ abstract interface class StockRepository {
   Future<Result<List<AutocompleteItemDto>>> search(String query);
 
   // 여러 종목의 실시간 시세를 한 번의 요청으로 조회한다.
-  // key는 종목코드, 응답에 없는 종목은 빠진다.
-  Future<Result<Map<String, RealtimeQuoteDto>>> fetchQuotes(
-    List<String> symbols,
-  );
+  Future<Result<RealtimeQuotesDto>> fetchQuotes(List<String> symbols);
 
   // 종목 기본 정보(이름 · 시장).
   Future<Result<StockMetaDto>> fetchMeta(String symbol);

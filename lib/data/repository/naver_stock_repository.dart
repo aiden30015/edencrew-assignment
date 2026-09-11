@@ -55,12 +55,10 @@ class NaverStockRepository implements StockRepository {
   }
 
   @override
-  Future<Result<Map<String, RealtimeQuoteDto>>> fetchQuotes(
-    List<String> symbols,
-  ) async {
+  Future<Result<RealtimeQuotesDto>> fetchQuotes(List<String> symbols) async {
     if (symbols.isEmpty) {
-      return const Success<Map<String, RealtimeQuoteDto>>(
-        <String, RealtimeQuoteDto>{},
+      return const Success<RealtimeQuotesDto>(
+        RealtimeQuotesDto(quotes: <String, RealtimeQuoteDto>{}),
       );
     }
     final Uri uri = Uri.https(
@@ -78,9 +76,15 @@ class NaverStockRepository implements StockRepository {
               in (area as Map<String, dynamic>)['datas'] as List<dynamic>)
             RealtimeQuoteDto.fromJson(json as Map<String, dynamic>),
       ];
-      return <String, RealtimeQuoteDto>{
-        for (final RealtimeQuoteDto quote in quotes) quote.symbolCode: quote,
-      };
+      final int? intervalMs = (result['pollingInterval'] as num?)?.toInt();
+      return RealtimeQuotesDto(
+        quotes: <String, RealtimeQuoteDto>{
+          for (final RealtimeQuoteDto quote in quotes) quote.symbolCode: quote,
+        },
+        pollingInterval: intervalMs == null || intervalMs <= 0
+            ? RealtimeQuotesDto.defaultPollingInterval
+            : Duration(milliseconds: intervalMs),
+      );
     });
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/state/favorites_notifier.dart';
 import '../../shared/widgets/retry_view.dart';
+import '../../shared/widgets/visibility_listener.dart';
 import '../../theme/theme.dart';
 import 'detail_view_model.dart';
 import 'models/chart_period.dart';
@@ -32,27 +33,32 @@ class DetailScreen extends ConsumerWidget {
     );
     final DetailState? data = detail.value;
 
-    return Scaffold(
-      appBar: DetailAppBar(
-        name: data?.stock.name ?? (detail.isLoading ? null : symbol),
-        subtitle: data?.stock.subtitle ?? (detail.isLoading ? symbol : null),
-        isFavorite: isFavorite,
-        onFavoriteTap: () =>
-            ref.read(favoritesProvider.notifier).toggle(symbol),
+    return VisibilityListener(
+      onChanged: ref
+          .read(detailViewModelProvider(symbol).notifier)
+          .setPollingActive,
+      child: Scaffold(
+        appBar: DetailAppBar(
+          name: data?.stock.name ?? (detail.isLoading ? null : symbol),
+          subtitle: data?.stock.subtitle ?? (detail.isLoading ? symbol : null),
+          isFavorite: isFavorite,
+          onFavoriteTap: () =>
+              ref.read(favoritesProvider.notifier).toggle(symbol),
+        ),
+        body: switch (detail) {
+          AsyncValue<DetailState>(:final DetailState value?) => _DetailBody(
+            state: value,
+            onSelectPeriod: ref
+                .read(detailViewModelProvider(symbol).notifier)
+                .selectPeriod,
+          ),
+          AsyncValue<DetailState>(isLoading: true) => const DetailSkeleton(),
+          _ => RetryView(
+            message: '종목 정보를 불러오지 못했습니다.\n네트워크 상태를 확인한 뒤 다시 시도해 주세요.',
+            onRetry: () => ref.invalidate(detailViewModelProvider(symbol)),
+          ),
+        },
       ),
-      body: switch (detail) {
-        AsyncValue<DetailState>(:final DetailState value?) => _DetailBody(
-          state: value,
-          onSelectPeriod: ref
-              .read(detailViewModelProvider(symbol).notifier)
-              .selectPeriod,
-        ),
-        AsyncValue<DetailState>(isLoading: true) => const DetailSkeleton(),
-        _ => RetryView(
-          message: '종목 정보를 불러오지 못했습니다.\n네트워크 상태를 확인한 뒤 다시 시도해 주세요.',
-          onRetry: () => ref.invalidate(detailViewModelProvider(symbol)),
-        ),
-      },
     );
   }
 }

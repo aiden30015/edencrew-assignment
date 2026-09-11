@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/visibility_listener.dart';
 import '../detail/detail_screen.dart';
 import 'models/watchlist_sort.dart';
 import 'watchlist_view_model.dart';
@@ -24,6 +25,13 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
   Widget build(BuildContext context) {
     final WatchlistState state = ref.watch(watchlistViewModelProvider);
 
+    return VisibilityListener(
+      onChanged: ref.read(watchlistViewModelProvider.notifier).setPollingActive,
+      child: _buildScaffold(state),
+    );
+  }
+
+  Widget _buildScaffold(WatchlistState state) {
     return Scaffold(
       appBar: WatchlistAppBar(
         sort: state.sort,

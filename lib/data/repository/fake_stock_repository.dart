@@ -57,24 +57,26 @@ class FakeStockRepository implements StockRepository {
   }
 
   @override
-  Future<Result<Map<String, RealtimeQuoteDto>>> fetchQuotes(
-    List<String> symbols,
-  ) async {
+  Future<Result<RealtimeQuotesDto>> fetchQuotes(List<String> symbols) async {
     await Future<void>.delayed(latency);
-    return Success<Map<String, RealtimeQuoteDto>>(<String, RealtimeQuoteDto>{
-      for (final String symbol in symbols)
-        if (_stocks[symbol] case final (String, String, int, int, int) s)
-          symbol: RealtimeQuoteDto(
-            symbolCode: symbol,
-            currentPrice: s.$3,
-            previousClose: s.$4,
-            openPrice: s.$4,
-            highPrice: max(s.$3, s.$4) + s.$3 ~/ 100,
-            lowPrice: min(s.$3, s.$4) - s.$3 ~/ 100,
-            accumulatedTradingVolume: 29113000 + symbol.hashCode % 1000000,
-            countOfListedStock: s.$5,
-          ),
-    });
+    return Success<RealtimeQuotesDto>(
+      RealtimeQuotesDto(
+        quotes: <String, RealtimeQuoteDto>{
+          for (final String symbol in symbols)
+            if (_stocks[symbol] case final (String, String, int, int, int) s)
+              symbol: RealtimeQuoteDto(
+                symbolCode: symbol,
+                currentPrice: s.$3,
+                previousClose: s.$4,
+                openPrice: s.$4,
+                highPrice: max(s.$3, s.$4) + s.$3 ~/ 100,
+                lowPrice: min(s.$3, s.$4) - s.$3 ~/ 100,
+                accumulatedTradingVolume: 29113000 + symbol.hashCode % 1000000,
+                countOfListedStock: s.$5,
+              ),
+        },
+      ),
+    );
   }
 
   @override

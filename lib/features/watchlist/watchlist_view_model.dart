@@ -5,6 +5,7 @@ import '../../data/dto/realtime_quote_dto.dart';
 import '../../data/dto/stock_meta_dto.dart';
 import '../../data/repository/stock_repository.dart';
 import '../../shared/state/favorites_notifier.dart';
+import '../../shared/utils/polling.dart';
 import '../../shared/utils/result.dart';
 import 'models/watchlist_item.dart';
 import 'models/watchlist_sort.dart';
@@ -43,9 +44,12 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
 
   int _quoteRequestId = 0;
 
+  late final Polling _polling = Polling(_fetchQuotes);
+
   @override
   WatchlistState build() {
     _repository = ref.watch(stockRepositoryProvider);
+    ref.onDispose(_polling.dispose);
 
     ref.listen<List<String>>(
       favoritesProvider,
@@ -58,6 +62,9 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
   }
 
   Future<void> refresh() => _load();
+
+  // 관심 탭이 보이는지. 안 보이면 자동 갱신을 멈추고, 다시 보이면 바로 조회한다.
+  void setPollingActive(bool active) => _polling.setActive(active);
 
   void changeSort(WatchlistSort sort) {
     _reversed = sort == _sort && !_reversed;
@@ -109,16 +116,26 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
     final List<String> symbols = _symbols;
     if (symbols.isEmpty) return;
 
-    final Result<Map<String, RealtimeQuoteDto>> result = await _repository
-        .fetchQuotes(symbols);
+    final Result<RealtimeQuotesDto> result = await _repository.fetchQuotes(
+      symbols,
+    );
     if (!ref.mounted || requestId != _quoteRequestId) return;
 
     switch (result) {
-      case Success(value: final quotes):
-        _quotes.addAll(quotes);
+      case Success(value: final dto):
+        _quotes.addAll(dto.quotes);
         _quoteFailed = false;
+        _polling.scheduleNext(
+          dto.pollingInterval,
+          marketOpen: dto.isMarketOpen,
+        );
       case Failure():
         _quoteFailed = true;
+        // 실패해도 화면이 보이는 동안은 같은 간격으로 다시 시도한다.
+        _polling.scheduleNext(
+          RealtimeQuotesDto.defaultPollingInterval,
+          marketOpen: true,
+        );
     }
     _emit();
   }

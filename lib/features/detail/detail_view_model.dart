@@ -6,6 +6,7 @@ import '../../data/dto/realtime_quote_dto.dart';
 import '../../data/dto/stock_meta_dto.dart';
 import '../../data/repository/daily_price_loader.dart';
 import '../../data/repository/stock_repository.dart';
+import '../../shared/utils/polling.dart';
 import '../../shared/utils/result.dart';
 import 'models/candle.dart';
 import 'models/chart_period.dart';
@@ -34,6 +35,7 @@ class DetailState {
   final bool hasPeriodError;
 
   DetailState copyWith({
+    StockDetail? stock,
     ChartPeriod? period,
     List<Candle>? candles,
     List<DailyPriceRow>? rows,
@@ -41,7 +43,7 @@ class DetailState {
     bool? hasPeriodError,
   }) {
     return DetailState(
-      stock: stock,
+      stock: stock ?? this.stock,
       period: period ?? this.period,
       candles: candles ?? this.candles,
       rows: rows ?? this.rows,
@@ -59,15 +61,20 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
   late StockRepository _repository;
   late DailyPriceLoader _dailyPriceLoader;
 
+  // 현재가 자동 갱신 때 다시 받지 않고 재사용한다(종목명 · 시장은 장중에 바뀌지 않음).
+  StockMetaDto? _meta;
+  late final Polling _polling = Polling(_refreshQuote);
+
   @override
   Future<DetailState> build() async {
     _repository = ref.watch(stockRepositoryProvider);
     _dailyPriceLoader = ref.watch(dailyPriceLoaderProvider);
+    ref.onDispose(_polling.dispose);
     const ChartPeriod period = ChartPeriod.oneMonth;
 
     final (
       Result<StockMetaDto> meta,
-      Result<Map<String, RealtimeQuoteDto>> quotes,
+      Result<RealtimeQuotesDto> quotes,
       Result<List<DailyPriceDto>> daily,
     ) = await (
       _repository.fetchMeta(symbol),
@@ -83,13 +90,17 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
     };
     return switch ((meta, quotes)) {
       (Success(value: final m), Success(value: final q))
-          when q[symbol] != null =>
-        DetailState(
-          stock: StockDetail.from(m, q[symbol]!),
-          period: period,
-          candles: _candles(days),
-          rows: _rows(days),
-          hasPeriodError: daily is Failure,
+          when q.quotes[symbol] != null =>
+        _start(
+          m,
+          q,
+          DetailState(
+            stock: StockDetail.from(m, q.quotes[symbol]!),
+            period: period,
+            candles: _candles(days),
+            rows: _rows(days),
+            hasPeriodError: daily is Failure,
+          ),
         ),
       (Failure(:final error), _) || (_, Failure(:final error)) => throw error,
       _ => throw StateError('no quote: $symbol'),
@@ -126,6 +137,51 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
         hasPeriodError: true,
       ),
     });
+  }
+
+  // 상세 화면이 보이는지. 안 보이면 자동 갱신을 멈추고, 다시 보이면 바로 조회한다.
+  void setPollingActive(bool active) => _polling.setActive(active);
+
+  DetailState _start(
+    StockMetaDto meta,
+    RealtimeQuotesDto quotes,
+    DetailState state,
+  ) {
+    _meta = meta;
+    _polling.scheduleNext(
+      quotes.pollingInterval,
+      marketOpen: quotes.isMarketOpen,
+    );
+    return state;
+  }
+
+  // 현재가 · 등락 · 요약 카드만 갱신한다. 실패하면 이전 값을 그대로 두고 다음 주기에 다시 시도한다.
+  Future<void> _refreshQuote() async {
+    final StockMetaDto? meta = _meta;
+    if (meta == null) return;
+    final Result<RealtimeQuotesDto> result = await _repository.fetchQuotes(
+      <String>[symbol],
+    );
+    if (!ref.mounted) return;
+    switch (result) {
+      case Success(value: final dto):
+        final RealtimeQuoteDto? quote = dto.quotes[symbol];
+        final DetailState? current = state.value;
+        if (quote != null && current != null) {
+          state = AsyncData<DetailState>(
+            current.copyWith(stock: StockDetail.from(meta, quote)),
+          );
+        }
+        _polling.scheduleNext(
+          dto.pollingInterval,
+          marketOpen: dto.isMarketOpen,
+        );
+      case Failure():
+        _polling.scheduleNext(
+          RealtimeQuotesDto.defaultPollingInterval,
+          marketOpen: true,
+        );
+    }
   }
 
   Future<Result<List<DailyPriceDto>>> _loadDaily(ChartPeriod period) =>

@@ -13,6 +13,7 @@ class WatchlistList extends StatelessWidget {
     required this.onRefresh,
     required this.onRetry,
     required this.onItemTap,
+    required this.onItemRemove,
   });
 
   final List<WatchlistItem> items;
@@ -22,6 +23,7 @@ class WatchlistList extends StatelessWidget {
   final RefreshCallback onRefresh;
   final VoidCallback onRetry;
   final ValueChanged<String> onItemTap;
+  final ValueChanged<String> onItemRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -41,16 +43,59 @@ class WatchlistList extends StatelessWidget {
               itemCount: items.length,
               itemBuilder: (BuildContext context, int index) {
                 final WatchlistItem item = items[index];
-                return WatchlistRow(
+                // 왼쪽으로 끝까지 밀면 바로 관심 해제. 검색 화면의 별 해제와 같은 동작이다.
+                return Dismissible(
                   key: ValueKey<String>(item.symbol),
-                  item: item,
-                  onTap: () => onItemTap(item.symbol),
+                  direction: DismissDirection.endToStart,
+                  background: const _DeleteBackground(),
+                  onDismissed: (_) => onItemRemove(item.symbol),
+                  child: WatchlistRow(
+                    item: item,
+                    onTap: () => onItemTap(item.symbol),
+                  ),
                 );
               },
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DeleteBackground extends StatelessWidget {
+  const _DeleteBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    final AppColors colors = context.colors;
+    final AppDimens dimens = context.dimens;
+
+    return ColoredBox(
+      color: colors.surfaceOverlay,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Padding(
+          padding: EdgeInsets.only(right: dimens.space4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: dimens.space1,
+            children: [
+              Icon(
+                Icons.star_outline_rounded,
+                size: dimens.iconMd,
+                color: colors.textSecondary,
+              ),
+              Text(
+                '관심 해제',
+                style: AppTypography.bold13.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/state/favorites_notifier.dart';
+import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/visibility_listener.dart';
 import '../detail/detail_screen.dart';
@@ -53,7 +55,17 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
               onRetry: _refresh,
               onItemTap: (String symbol) =>
                   Navigator.of(context).push(DetailScreen.route(symbol)),
+              onItemRemove: _remove,
             ),
+    );
+  }
+
+  void _remove(String symbol) {
+    ref.read(favoritesProvider.notifier).toggle(symbol);
+    showAppToast(
+      context,
+      message: '관심이 해제되었습니다',
+      icon: Icons.star_outline_rounded,
     );
   }
 

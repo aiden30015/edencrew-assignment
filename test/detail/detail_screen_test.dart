@@ -2,6 +2,7 @@ import 'package:edencrew_assignment_starter/data/repository/fake_stock_repositor
 import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 import 'package:edencrew_assignment_starter/features/detail/detail_screen.dart';
 import 'package:edencrew_assignment_starter/features/detail/widgets/candle_chart.dart';
+import 'package:edencrew_assignment_starter/features/detail/widgets/daily_price_table.dart';
 import 'package:edencrew_assignment_starter/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,6 +45,20 @@ void main() {
     await press.up();
     await tester.pump();
     expect(find.byType(Table), findsNothing);
+
+    // 일별 시세 표는 10행부터, 끝까지 스크롤하면 기간(1개월 = 20행)까지만 더 펼친다.
+    int tableRows() => tester
+        .widget<DailyPriceTable>(find.byType(DailyPriceTable))
+        .rows
+        .length;
+    expect(tableRows(), 10);
+    for (int i = 0; i < 3; i++) {
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -1000));
+      await tester.pumpAndSettle();
+    }
+    expect(tableRows(), 20);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, 3000));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('1년'));
     await tester.pumpAndSettle();

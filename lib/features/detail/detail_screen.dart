@@ -63,58 +63,91 @@ class DetailScreen extends ConsumerWidget {
   }
 }
 
-class _DetailBody extends StatelessWidget {
+class _DetailBody extends StatefulWidget {
   const _DetailBody({required this.state, required this.onSelectPeriod});
 
   final DetailState state;
   final ValueChanged<ChartPeriod> onSelectPeriod;
 
   @override
+  State<_DetailBody> createState() => _DetailBodyState();
+}
+
+// 일별 시세 표는 10행부터 보여주고, 표 끝 근처까지 스크롤하면 10행씩 더 펼친다.
+// 선택한 기간의 행은 이미 받아 둔 상태라 추가 요청은 없고, 기간을 넘어서 펼치지 않는다.
+class _DetailBodyState extends State<_DetailBody> {
+  static const int _pageRows = 10;
+  static const double _loadMoreExtent = 200;
+
+  int _visibleRows = _pageRows;
+
+  @override
+  void didUpdateWidget(_DetailBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.state.rows != widget.state.rows) _visibleRows = _pageRows;
+  }
+
+  bool _onScroll(ScrollNotification notification) {
+    if (notification.metrics.extentAfter < _loadMoreExtent &&
+        _visibleRows < widget.state.rows.length) {
+      setState(() => _visibleRows += _pageRows);
+    }
+    return false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final AppDimens dimens = context.dimens;
+    final DetailState state = widget.state;
+    final ValueChanged<ChartPeriod> onSelectPeriod = widget.onSelectPeriod;
 
-    return CustomScrollView(
-      slivers: [
-        SliverPadding(
-          padding: EdgeInsets.fromLTRB(
-            dimens.space4,
-            dimens.space3,
-            dimens.space4,
-            0,
-          ),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PriceHeader(
-                  stock: state.stock,
-                  selected: state.period,
-                  onSelect: onSelectPeriod,
-                ),
-                SizedBox(height: dimens.space4),
-                CandleChart(
-                  candles: state.candles,
-                  isLoading: state.isPeriodLoading,
-                  hasError: state.hasPeriodError,
-                  onRetry: () => onSelectPeriod(state.period),
-                ),
-                SizedBox(height: dimens.space4),
-                SummarySection(stock: state.stock),
-                SizedBox(height: dimens.space6),
-              ],
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScroll,
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              dimens.space4,
+              dimens.space3,
+              dimens.space4,
+              0,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PriceHeader(
+                    stock: state.stock,
+                    selected: state.period,
+                    onSelect: onSelectPeriod,
+                  ),
+                  SizedBox(height: dimens.space4),
+                  CandleChart(
+                    candles: state.candles,
+                    isLoading: state.isPeriodLoading,
+                    hasError: state.hasPeriodError,
+                    onRetry: () => onSelectPeriod(state.period),
+                  ),
+                  SizedBox(height: dimens.space4),
+                  SummarySection(stock: state.stock),
+                  SizedBox(height: dimens.space6),
+                ],
+              ),
             ),
           ),
-        ),
-        DailyPriceTable(
-          rows: state.hasPeriodError ? const <DailyPriceRow>[] : state.rows,
-          isLoading: state.isPeriodLoading,
-        ),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: dimens.space6 + MediaQuery.paddingOf(context).bottom,
+          DailyPriceTable(
+            rows: state.hasPeriodError
+                ? const <DailyPriceRow>[]
+                : state.rows.take(_visibleRows).toList(),
+            isLoading: state.isPeriodLoading,
           ),
-        ),
-      ],
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: dimens.space6 + MediaQuery.paddingOf(context).bottom,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

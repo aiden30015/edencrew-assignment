@@ -46,3 +46,6 @@ app.*.map.json
 
 # FVM
 .fvm/
+
+# 개발 도구 상태 파일
+.omc/

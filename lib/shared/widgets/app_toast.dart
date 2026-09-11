@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -94,9 +95,14 @@ class ToastHostState extends State<ToastHost> {
         Positioned(
           left: dimens.space4,
           right: dimens.space4,
-          // 하단 탭 화면에서는 Scaffold가 body의 하단 여백을 0으로 주므로 탭 바 바로 위,
-          // 상세처럼 화면 전체를 감쌀 때는 제스처 바 같은 시스템 영역 위에 뜬다.
-          bottom: dimens.space3 + MediaQuery.paddingOf(context).bottom,
+          // 하단 탭 화면에서는 Scaffold가 body를 탭 바 · 키보드 위로 줄이고 여백을 0으로 주므로 그 바로 위,
+          // 상세처럼 화면 전체를 감쌀 때는 제스처 바나 키보드 중 더 높은 쪽 위에 뜬다.
+          bottom:
+              dimens.space3 +
+              max(
+                MediaQuery.paddingOf(context).bottom,
+                MediaQuery.viewInsetsOf(context).bottom,
+              ),
           // Scaffold 바깥을 감쌀 때도 글자 스타일이 적용되도록 투명 Material을 둔다.
           // (Material 조상이 없으면 Text에 노란 밑줄이 생긴다)
           child: Material(

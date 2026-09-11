@@ -59,4 +59,72 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('두 번째'), findsNothing);
   });
+
+  // 키보드(높이 300)와 제스처 바(34)가 있는 393 × 852 화면.
+  const double screenHeight = 852;
+  const double keyboard = 300;
+  void withKeyboard(WidgetTester tester) {
+    tester.view.physicalSize = const Size(393, screenHeight);
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(bottom: 34);
+    tester.view.viewInsets = const FakeViewPadding(bottom: keyboard);
+    addTearDown(tester.view.reset);
+  }
+
+  Future<double> toastBottom(WidgetTester tester) async {
+    showAppToast(context, message: '토스트');
+    await tester.pumpAndSettle(const Duration(milliseconds: 300));
+    return tester.getBottomLeft(find.text('토스트')).dy;
+  }
+
+  testWidgets('키보드가 올라와 있으면 탭 화면(Scaffold body 안)에서 키보드 위에 뜬다', (
+    WidgetTester tester,
+  ) async {
+    withKeyboard(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Scaffold(
+          body: ToastHost(
+            child: Builder(
+              builder: (BuildContext c) {
+                context = c;
+                return const SizedBox.expand();
+              },
+            ),
+          ),
+          bottomNavigationBar: const SizedBox(height: 80),
+        ),
+      ),
+    );
+
+    expect(
+      await toastBottom(tester),
+      lessThanOrEqualTo(screenHeight - keyboard),
+    );
+  });
+
+  testWidgets('키보드가 올라와 있으면 상세 화면(Scaffold 바깥)에서도 키보드 위에 뜬다', (
+    WidgetTester tester,
+  ) async {
+    withKeyboard(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: ToastHost(
+          child: Builder(
+            builder: (BuildContext c) {
+              context = c;
+              return const Scaffold(body: SizedBox.expand());
+            },
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      await toastBottom(tester),
+      lessThanOrEqualTo(screenHeight - keyboard),
+    );
+  });
 }

@@ -28,21 +28,51 @@ void main() {
     expect(repo.dailyPages, hasLength(6));
   });
 
-  test('날짜가 바뀌면 받은 페이지를 버리고 다시 받는다', () async {
+  test('처음 들어올 때는 refreshLatest여도 1페이지를 한 번만 받는다', () async {
     final RecordingStockRepository repo = RecordingStockRepository();
-    DateTime now = DateTime(2026, 9, 11, 15);
-    final DailyPriceLoader loader = DailyPriceLoader(repo, now: () => now);
+    final DailyPriceLoader loader = DailyPriceLoader(repo);
 
-    await _load(loader, 20);
+    await loader.load('005930', 20, refreshLatest: true);
     expect(repo.dailyPages, <int>[1, 2]);
+  });
 
-    now = DateTime(2026, 9, 11, 23, 59);
-    await _load(loader, 20);
-    expect(repo.dailyPages, <int>[1, 2]);
+  test('다시 들어오면 1페이지만 새로 받고, 맨 위 날짜가 같으면 나머지는 재사용한다', () async {
+    final _ChangingRepository repo = _ChangingRepository();
+    final DailyPriceLoader loader = DailyPriceLoader(repo);
+    await _load(loader, 60);
 
-    now = DateTime(2026, 9, 12, 9);
-    await _load(loader, 20);
-    expect(repo.dailyPages, <int>[1, 2, 1, 2]);
+    repo.intraday = true;
+    final List<DailyPriceDto> days = switch (await loader.load(
+      '005930',
+      60,
+      refreshLatest: true,
+    )) {
+      Success(:final value) => value,
+      Failure(:final error) => throw error,
+    };
+
+    expect(repo.dailyPages, <int>[1, 2, 3, 4, 5, 6, 1]);
+    expect(days.first.closePrice, _ChangingRepository.intradayClose);
+    expect(days, hasLength(60));
+  });
+
+  test('맨 위 날짜가 바뀌었으면 행이 밀린 것이라 캐시를 버리고 다시 받는다', () async {
+    final _ChangingRepository repo = _ChangingRepository();
+    final DailyPriceLoader loader = DailyPriceLoader(repo);
+    await _load(loader, 60);
+
+    repo.newDay = true;
+    final List<DailyPriceDto> days = switch (await loader.load(
+      '005930',
+      60,
+      refreshLatest: true,
+    )) {
+      Success(:final value) => value,
+      Failure(:final error) => throw error,
+    };
+
+    expect(repo.dailyPages, <int>[1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6]);
+    expect(days.first.localDate, _ChangingRepository.newDate);
   });
 
   test('lastPage보다 큰 페이지는 요청하지 않는다', () async {
@@ -72,4 +102,52 @@ void main() {
     await loader.load('999999', 20);
     expect(repo.dailyPages, <int>[1, 1]);
   });
+}
+
+// 1페이지 응답을 바꿔 장중 갱신(같은 날짜, 다른 종가)과 새 거래일(맨 앞에 행 추가)을 흉내 낸다.
+class _ChangingRepository extends RecordingStockRepository {
+  static const int intradayClose = 1;
+  static const String newDate = '29991231';
+
+  bool intraday = false;
+  bool newDay = false;
+
+  @override
+  Future<Result<DailyPricePageDto>> fetchDailyPrices(
+    String symbol,
+    int page,
+  ) async {
+    final Result<DailyPricePageDto> result = await super.fetchDailyPrices(
+      symbol,
+      page,
+    );
+    if (page != 1 || result is! Success<DailyPricePageDto>) return result;
+    final List<DailyPriceDto> items = result.value.items;
+    final DailyPriceDto top = items.first;
+
+    DailyPriceDto withTop(String date, int close) => DailyPriceDto(
+      localDate: date,
+      closePrice: close,
+      changePrice: top.changePrice,
+      openPrice: top.openPrice,
+      highPrice: top.highPrice,
+      lowPrice: top.lowPrice,
+      accumulatedTradingVolume: top.accumulatedTradingVolume,
+    );
+
+    final List<DailyPriceDto> changed = switch ((intraday, newDay)) {
+      (_, true) => <DailyPriceDto>[
+        withTop(newDate, top.closePrice),
+        ...items.take(items.length - 1),
+      ],
+      (true, false) => <DailyPriceDto>[
+        withTop(top.localDate, intradayClose),
+        ...items.skip(1),
+      ],
+      _ => items,
+    };
+    return Success<DailyPricePageDto>(
+      DailyPricePageDto(items: changed, lastPage: result.value.lastPage),
+    );
+  }
 }

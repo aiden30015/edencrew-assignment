@@ -79,7 +79,8 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
     ) = await (
       _repository.fetchMeta(symbol),
       _repository.fetchQuotes(<String>[symbol]),
-      _loadDaily(period),
+      // 들어올 때마다 1페이지는 새로 받아 오늘 행을 갱신한다. 나머지 페이지는 캐시 재사용.
+      _dailyPriceLoader.load(symbol, period.tradingDays, refreshLatest: true),
     ).wait;
 
     // 종목 정보 · 현재가가 없으면 화면을 그릴 수 없어 전체 실패.

@@ -125,7 +125,26 @@ void main() {
       '',
     );
     expect(DailyPricePageDto.fromHtml(html).lastPage, 2);
-    expect(DailyPricePageDto.fromHtml('<html></html>').lastPage, 1);
+  });
+
+  test('일별 시세: 표가 없는 페이지(차단 · 안내)는 빈 성공이 아니라 Failure', () async {
+    expect(
+      () => DailyPricePageDto.fromHtml('<html></html>'),
+      throwsFormatException,
+    );
+
+    final NaverStockRepository repository = NaverStockRepository(
+      client: MockClient(
+        (http.Request request) async => _eucKr(
+          '<html><body>잠시 후 다시 이용해 주세요.</body></html>',
+          'text/html;charset=euc-kr',
+        ),
+      ),
+    );
+    expect(
+      await repository.fetchDailyPrices('005930', 1),
+      isA<Failure<DailyPricePageDto>>(),
+    );
   });
 
   test('실시간 시세: 여러 종목을 한 번에 요청하고 종목코드로 찾을 수 있게 정리한다', () async {

@@ -10,8 +10,15 @@ class DailyPricePageDto {
   factory DailyPricePageDto.fromHtml(String html) {
     final Document document = html_parser.parse(html);
 
+    // 표가 없으면 차단 · 안내 페이지이거나 형식이 바뀐 것이다. 빈 페이지로 두면 성공으로 캐시되어
+    // 오류 없이 빈 차트가 남으므로 파싱 실패로 처리한다.
+    final Element? table = document.querySelector('table.type2');
+    if (table == null) {
+      throw const FormatException('sise_day: table.type2가 없습니다');
+    }
+
     final List<DailyPriceDto> items = <DailyPriceDto>[
-      for (final Element row in document.querySelectorAll('table.type2 tr'))
+      for (final Element row in table.querySelectorAll('tr'))
         if (_parseRow(row) case final DailyPriceDto item) item,
     ];
 

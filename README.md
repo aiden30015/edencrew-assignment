@@ -97,7 +97,7 @@ test/mocks/    테스트용 가짜 저장소 (FakeStockRepository, RecordingStoc
 | `http` | GET 4개면 충분해서 가벼운 공식 패키지. 테스트는 `MockClient` |
 | `html` | 일별 시세가 HTML이라 DOM으로 파싱. 정규식보다 공백 · 속성 순서 변화에 안전 |
 | `charset` | 실시간 시세 · 일별 시세 응답이 **EUC-KR**. `dart:convert`에 디코더가 없고 `http`는 모르는 charset을 latin1로 읽어 한글이 깨짐 |
-| `shared_preferences` | 관심 목록 · 최근 검색어 저장. 문자열 목록 두 개라 DB는 과함 |
+| `shared_preferences` | 관심 목록 · 최근 검색어 · 정렬 기준과 방향 저장. 문자열 목록 두 개와 값 두 개라 DB는 과함 |
 
 ### 일별 시세 페이지 요청 (`DailyPriceLoader`)
 

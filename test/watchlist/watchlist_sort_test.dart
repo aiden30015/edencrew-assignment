@@ -1,6 +1,5 @@
 import 'package:edencrew_assignment_starter/features/watchlist/models/watchlist_item.dart';
 import 'package:edencrew_assignment_starter/features/watchlist/models/watchlist_sort.dart';
-import 'package:edencrew_assignment_starter/features/watchlist/watchlist_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -30,7 +29,7 @@ void main() {
   ];
 
   List<String> symbols(WatchlistSort sort, {bool reversed = false}) => <String>[
-    for (final WatchlistItem i in WatchlistViewModel.sortItems(
+    for (final WatchlistItem i in sortWatchlistItems(
       items,
       sort,
       reversed: reversed,
@@ -87,7 +86,7 @@ void main() {
   });
 
   test('원본 목록은 바꾸지 않는다', () {
-    WatchlistViewModel.sortItems(items, WatchlistSort.price);
+    sortWatchlistItems(items, WatchlistSort.price);
     expect(items.first.symbol, '005930');
   });
 }

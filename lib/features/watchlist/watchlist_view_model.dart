@@ -41,7 +41,9 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
   WatchlistSort _sort = WatchlistSort.name;
   bool _reversed = false;
 
-  bool _metaFailed = false;
+  // 메타를 받지 못한 종목과 받는 중인 종목.
+  final Set<String> _metaFailures = <String>{};
+  final Set<String> _metaInFlight = <String>{};
   bool _quoteFailed = false;
 
   int _quoteRequestId = 0;
@@ -91,6 +93,8 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
     final bool added = next.any((String s) => !_symbols.contains(s));
     _symbols = next;
     _quotes.removeWhere((String symbol, _) => !next.contains(symbol));
+    _metas.removeWhere((String symbol, _) => !next.contains(symbol));
+    _metaFailures.removeWhere((String symbol) => !next.contains(symbol));
     _emit();
     if (added) _load();
   }
@@ -99,30 +103,33 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
     await Future.wait(<Future<void>>[_fetchMissingMetas(), _fetchQuotes()]);
   }
 
+  // 받는 중인 종목은 다시 요청하지 않는다. 별을 연달아 눌러 여러 번 불려도 종목마다 한 번만 받는다.
   Future<void> _fetchMissingMetas() async {
     final List<String> missing = <String>[
       for (final String symbol in _symbols)
-        if (!_metas.containsKey(symbol)) symbol,
+        if (!_metas.containsKey(symbol) && !_metaInFlight.contains(symbol))
+          symbol,
     ];
     if (missing.isEmpty) return;
 
+    _metaInFlight.addAll(missing);
     final List<Result<StockMetaDto>> results = await Future.wait(
       <Future<Result<StockMetaDto>>>[
         for (final String symbol in missing) _repository.fetchMeta(symbol),
       ],
     );
+    _metaInFlight.removeAll(missing);
     if (!ref.mounted) return;
 
-    bool failed = false;
     for (int i = 0; i < missing.length; i++) {
       switch (results[i]) {
         case Success(:final value):
           _metas[missing[i]] = value;
+          _metaFailures.remove(missing[i]);
         case Failure():
-          failed = true;
+          _metaFailures.add(missing[i]);
       }
     }
-    _metaFailed = failed;
     _emit();
   }
 
@@ -160,7 +167,7 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
   WatchlistState _buildState() {
     return WatchlistState(
       items: List<WatchlistItem>.unmodifiable(
-        sortItems(
+        sortWatchlistItems(
           <WatchlistItem>[
             for (final String symbol in _symbols)
               WatchlistItem.fromDto(
@@ -175,62 +182,9 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
       ),
       sort: _sort,
       reversed: _reversed,
-      hasError: _metaFailed || _quoteFailed,
+      // 메타 실패는 지금 목록에 남아 있는 종목만 본다. 실패한 종목을 해제하면 배너도 사라진다.
+      hasError: _quoteFailed || _symbols.any(_metaFailures.contains),
     );
-  }
-
-  static List<WatchlistItem> sortItems(
-    List<WatchlistItem> items,
-    WatchlistSort sort, {
-    bool reversed = false,
-  }) {
-    final List<WatchlistItem> result = <WatchlistItem>[...items];
-    mergeSort<WatchlistItem>(
-      result,
-      compare: (WatchlistItem a, WatchlistItem b) => switch (sort) {
-        WatchlistSort.price => _compareMissingLast<int>(
-          a.quote?.price,
-          b.quote?.price,
-          (int x, int y) => y.compareTo(x),
-          reversed,
-        ),
-        WatchlistSort.changeRate => _compareMissingLast<double>(
-          a.quote?.changeRate,
-          b.quote?.changeRate,
-          (double x, double y) => y.compareTo(x),
-          reversed,
-        ),
-        WatchlistSort.name => _compareMissingLast<String>(
-          a.name,
-          b.name,
-          _compareName,
-          reversed,
-        ),
-      },
-    );
-    return result;
-  }
-
-  static int _compareMissingLast<T>(
-    T? a,
-    T? b,
-    int Function(T a, T b) compare,
-    bool reversed,
-  ) {
-    if (a == null) return b == null ? 0 : 1;
-    if (b == null) return -1;
-    return reversed ? compare(b, a) : compare(a, b);
-  }
-
-  static int _compareName(String a, String b) {
-    final int group = _nameGroup(a).compareTo(_nameGroup(b));
-    return group != 0 ? group : a.compareTo(b);
-  }
-
-  static int _nameGroup(String name) {
-    if (name.isEmpty) return 1;
-    final int code = name.codeUnitAt(0);
-    return code >= 0xAC00 && code <= 0xD7A3 ? 0 : 1;
   }
 }
 

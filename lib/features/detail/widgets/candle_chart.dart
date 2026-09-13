@@ -98,7 +98,11 @@ class _CandleChartState extends State<CandleChart> {
     final TextStyle axisStyle = AppTypography.regular11.copyWith(
       color: colors.chartAxisLabel,
     );
-    final _PriceAxis axis = _PriceAxis.of(candles, axisStyle);
+    final _PriceAxis axis = _PriceAxis.of(
+      candles,
+      axisStyle,
+      gap: context.dimens.space2,
+    );
     final int? selected = _selected;
 
     return Padding(
@@ -157,7 +161,11 @@ class _PriceAxis {
     required this.width,
   });
 
-  factory _PriceAxis.of(List<Candle> candles, TextStyle style) {
+  factory _PriceAxis.of(
+    List<Candle> candles,
+    TextStyle style, {
+    required double gap,
+  }) {
     final int maxPrice = candles.map((Candle c) => c.high).reduce(max);
     final int minPrice = candles.map((Candle c) => c.low).reduce(min);
     final List<TextPainter> labels = <TextPainter>[
@@ -171,8 +179,9 @@ class _PriceAxis {
           textDirection: TextDirection.ltr,
         )..layout(),
     ];
-    // 가장 긴 라벨 + 왼쪽 여백 8
-    final double width = labels.map((TextPainter p) => p.width).reduce(max) + 8;
+    // 가장 긴 라벨 + 차트와의 간격
+    final double width =
+        labels.map((TextPainter p) => p.width).reduce(max) + gap;
     return _PriceAxis(
       maxPrice: maxPrice,
       minPrice: minPrice,

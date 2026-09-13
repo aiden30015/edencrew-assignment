@@ -2,6 +2,7 @@ import 'package:edencrew_assignment_starter/data/repository/stock_repository.dar
 import 'package:edencrew_assignment_starter/features/detail/detail_screen.dart';
 import 'package:edencrew_assignment_starter/features/detail/widgets/candle_chart.dart';
 import 'package:edencrew_assignment_starter/features/detail/widgets/daily_price_table.dart';
+import 'package:edencrew_assignment_starter/features/detail/widgets/detail_app_bar.dart';
 import 'package:edencrew_assignment_starter/main.dart';
 import 'package:edencrew_assignment_starter/theme/theme.dart';
 import 'package:flutter/material.dart';
@@ -96,6 +97,55 @@ void main() {
 
     expect(find.text('1,043,000'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('헤더의 뒤로 가기 · 별은 48 이상 눌리고, 아이콘 위치는 시안 그대로', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          stockRepositoryProvider.overrideWithValue(
+            FakeStockRepository(latency: Duration.zero),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark,
+          home: const DetailScreen(symbol: '005930'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final Size back = tester.getSize(find.byTooltip('뒤로 가기'));
+    expect(back.width, greaterThanOrEqualTo(kMinInteractiveDimension));
+    expect(back.height, greaterThanOrEqualTo(kMinInteractiveDimension));
+    expect(
+      tester.getSize(find.byTooltip('관심 등록')),
+      const Size.square(kMinInteractiveDimension),
+    );
+
+    // 아이콘은 좌우 여백 16, 종목명은 뒤로 가기 아이콘 + 간격 12 뒤(48)에서 시작.
+    expect(tester.getTopLeft(find.byIcon(Icons.arrow_back)).dx, 16);
+    expect(
+      tester.getTopRight(find.byIcon(Icons.star_outline_rounded)).dx,
+      393 - 16,
+    );
+    expect(
+      tester
+          .getTopLeft(
+            find.descendant(
+              of: find.byType(DetailAppBar),
+              matching: find.text('삼성전자'),
+            ),
+          )
+          .dx,
+      48,
+    );
   });
 
   testWidgets('상세 화면에서 별을 누르면 등록 · 해제 토스트가 뜬다', (WidgetTester tester) async {

@@ -16,12 +16,15 @@ class FavoriteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppColors colors = context.colors;
     final AppDimens dimens = context.dimens;
+    // 누르는 영역은 48 × 48, 아이콘은 시안 크기(iconMd). 늘어난 만큼 오른쪽으로 옮겨서
+    // 아이콘 오른쪽 끝이 시안처럼 화면 여백(space4) 선에 맞는다.
+    final double padding = (kMinInteractiveDimension - dimens.iconMd) / 2;
 
     return Transform.translate(
-      offset: Offset(dimens.space2, 0),
+      offset: Offset(padding, 0),
       child: IconButton(
         iconSize: dimens.iconMd,
-        padding: EdgeInsets.all(dimens.space2),
+        padding: EdgeInsets.all(padding),
         constraints: const BoxConstraints(),
         style: IconButton.styleFrom(
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -31,6 +31,8 @@ class WatchlistAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppHeader(
       height: _height,
+      // 새로고침은 정렬 칩과의 간격 · 오른쪽 여백(space4)을 누르는 영역에 포함한다.
+      padding: EdgeInsets.only(left: dimens.space4),
       child: Row(
         children: [
           Expanded(
@@ -43,7 +45,8 @@ class WatchlistAppBar extends StatelessWidget implements PreferredSizeWidget {
             onTap: onSortTap,
             borderRadius: BorderRadius.circular(dimens.radiusSm),
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: dimens.space1),
+              // 칩 높이를 44까지 늘려 누르기 쉽게 한다. 글자 위치는 헤더 가운데 그대로.
+              padding: EdgeInsets.symmetric(vertical: dimens.space3),
               child: Row(
                 children: [
                   Text(
@@ -61,7 +64,6 @@ class WatchlistAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-          SizedBox(width: dimens.space4),
           _RefreshButton(onTap: onRefresh),
         ],
       ),
@@ -86,8 +88,15 @@ class _RefreshButtonState extends State<_RefreshButton>
     duration: const Duration(milliseconds: 600),
   );
 
+  // build마다 새로 만들면 컨트롤러에 리스너가 계속 쌓여서 한 번만 만든다.
+  late final CurvedAnimation _curve = CurvedAnimation(
+    parent: _turns,
+    curve: Curves.easeInOut,
+  );
+
   @override
   void dispose() {
+    _curve.dispose();
     _turns.dispose();
     super.dispose();
   }
@@ -99,17 +108,25 @@ class _RefreshButtonState extends State<_RefreshButton>
 
   @override
   Widget build(BuildContext context) {
+    final AppDimens dimens = context.dimens;
+
     return Tooltip(
       message: '새로고침',
-      child: InkWell(
+      child: InkResponse(
         onTap: _onTap,
         radius: 20,
-        child: RotationTransition(
-          turns: CurvedAnimation(parent: _turns, curve: Curves.easeInOut),
-          child: Icon(
-            Icons.sync,
-            size: context.dimens.iconMd,
-            color: context.colors.textSecondary,
+        child: SizedBox(
+          height: double.infinity,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: dimens.space4),
+            child: RotationTransition(
+              turns: _curve,
+              child: Icon(
+                Icons.sync,
+                size: dimens.iconMd,
+                color: context.colors.textSecondary,
+              ),
+            ),
           ),
         ),
       ),

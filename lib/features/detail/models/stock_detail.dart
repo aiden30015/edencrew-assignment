@@ -1,5 +1,6 @@
 import '../../../data/dto/realtime_quote_dto.dart';
 import '../../../data/dto/stock_meta_dto.dart';
+import '../../../shared/utils/format.dart';
 import '../../../shared/utils/price_direction.dart';
 
 // 상세 화면 헤더 · 현재가 · 요약 카드에 쓰는 종목 정보.
@@ -28,7 +29,7 @@ class StockDetail {
       market: meta.stockExchangeNameKor,
       price: quote.currentPrice,
       change: change,
-      changeRate: quote.previousClose == 0 ? 0 : change / quote.previousClose,
+      changeRate: Format.changeRate(change, quote.previousClose),
       open: quote.openPrice,
       high: quote.highPrice,
       low: quote.lowPrice,

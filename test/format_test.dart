@@ -17,4 +17,12 @@ void main() {
     expect(Format.marketCap(812000000000), '8,120억');
     expect(Format.monthDay('20260910'), '09.10');
   });
+
+  test('등락률은 이진 오차 없이 소수 둘째 자리(%)에서 반올림한다', () {
+    // double로 바로 나누면 1.00499…%가 되어 +1.00%로 내려가던 값.
+    expect(Format.signedPercent(Format.changeRate(201, 20000)), '+1.01%');
+    expect(Format.signedPercent(Format.changeRate(-201, 20000)), '-1.01%');
+    expect(Format.signedPercent(Format.changeRate(-400, 180100)), '-0.22%');
+    expect(Format.changeRate(5, 0), 0);
+  });
 }

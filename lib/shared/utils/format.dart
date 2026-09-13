@@ -12,6 +12,11 @@ abstract final class Format {
   static String signedNumber(num value) =>
       value > 0 ? '+${number(value)}' : number(value);
 
+  // 등락률(비율). 표기 자리(소수 둘째 자리 %)에서 정수로 반올림해 둔다.
+  // double로 나눈 뒤 반올림하면 201 / 20,000 = 1.00499…%처럼 이진 오차로 한 자리 내려간다.
+  static double changeRate(int change, int base) =>
+      base == 0 ? 0 : (change * 10000 / base).round() / 10000;
+
   static String signedPercent(double ratio) {
     final String text = '${(ratio * 100).abs().toStringAsFixed(2)}%';
     if (text == '0.00%') return text;

@@ -5,6 +5,7 @@ import 'package:edencrew_assignment_starter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 
 import 'mocks/fake_stock_repository.dart';
 
@@ -22,7 +23,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
+        overrides: <Override>[
           stockRepositoryProvider.overrideWithValue(
             FakeStockRepository(latency: Duration.zero),
           ),

@@ -15,10 +15,10 @@ class SummarySection extends StatelessWidget {
 
     return Column(
       spacing: gap,
-      children: [
+      children: <Widget>[
         Row(
           spacing: gap,
-          children: [
+          children: <Widget>[
             _SummaryCard(label: '시가', value: Format.number(stock.open)),
             _SummaryCard(label: '고가', value: Format.number(stock.high)),
             _SummaryCard(label: '저가', value: Format.number(stock.low)),
@@ -26,7 +26,7 @@ class SummarySection extends StatelessWidget {
         ),
         Row(
           spacing: gap,
-          children: [
+          children: <Widget>[
             _SummaryCard(label: '거래량', value: Format.volume(stock.volume)),
             _SummaryCard(
               label: '시가총액',
@@ -63,7 +63,7 @@ class _SummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: dimens.space1,
-          children: [
+          children: <Widget>[
             Text(
               label,
               maxLines: 1,

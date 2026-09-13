@@ -7,6 +7,7 @@ import 'package:edencrew_assignment_starter/shared/utils/price_direction.dart';
 import 'package:edencrew_assignment_starter/shared/utils/result.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 
 import '../mocks/recording_stock_repository.dart';
 
@@ -32,7 +33,7 @@ void main() {
   test('기간 전환은 일별 시세만 필요한 페이지만큼 더 받고, 시세는 다시 받지 않는다', () async {
     final RecordingStockRepository repo = RecordingStockRepository();
     final ProviderContainer container = ProviderContainer(
-      overrides: [stockRepositoryProvider.overrideWithValue(repo)],
+      overrides: <Override>[stockRepositoryProvider.overrideWithValue(repo)],
     );
     addTearDown(container.dispose);
     final AsyncNotifierProvider<DetailViewModel, DetailState> provider =
@@ -56,7 +57,7 @@ void main() {
 
   test('저장소가 Failure를 돌려주면 첫 로딩은 AsyncError가 된다', () async {
     final ProviderContainer container = ProviderContainer(
-      overrides: [
+      overrides: <Override>[
         stockRepositoryProvider.overrideWithValue(RecordingStockRepository()),
       ],
     );
@@ -71,7 +72,7 @@ void main() {
 
   test('일별 시세만 실패하면 현재가는 보여주고 기간 오류로 표시한다', () async {
     final ProviderContainer container = ProviderContainer(
-      overrides: [
+      overrides: <Override>[
         stockRepositoryProvider.overrideWithValue(_DailyFailingRepository()),
       ],
     );

@@ -90,7 +90,7 @@ class ToastHostState extends State<ToastHost> {
     final AppDimens dimens = context.dimens;
 
     return Stack(
-      children: [
+      children: <Widget>[
         widget.child,
         Positioned(
           left: dimens.space4,
@@ -109,7 +109,7 @@ class ToastHostState extends State<ToastHost> {
             type: MaterialType.transparency,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
+              children: <Widget>[
                 for (final _Toast toast in _toasts)
                   _AnimatedToast(
                     key: ValueKey<int>(toast.id),
@@ -247,7 +247,7 @@ class _ToastContent extends StatelessWidget {
       ),
       child: Row(
         spacing: dimens.space2,
-        children: [
+        children: <Widget>[
           if (icon != null) Icon(icon, size: dimens.iconSm, color: iconColor),
           Expanded(
             child: Text(

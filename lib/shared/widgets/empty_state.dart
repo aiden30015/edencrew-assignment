@@ -24,7 +24,7 @@ class EmptyState extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: dimens.space4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             Icon(icon, size: 40, color: colors.textTertiary),
             SizedBox(height: dimens.space3),
             Text(

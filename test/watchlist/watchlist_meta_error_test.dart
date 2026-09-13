@@ -3,13 +3,14 @@ import 'package:edencrew_assignment_starter/features/watchlist/watchlist_view_mo
 import 'package:edencrew_assignment_starter/shared/state/favorites_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 
 import '../mocks/fake_stock_repository.dart';
 
 void main() {
   test('종목 정보를 못 받은 종목을 해제하면 오류 배너가 사라진다', () async {
     final ProviderContainer container = ProviderContainer(
-      overrides: [
+      overrides: <Override>[
         stockRepositoryProvider.overrideWithValue(
           FakeStockRepository(latency: Duration.zero),
         ),

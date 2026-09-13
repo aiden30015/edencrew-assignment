@@ -18,7 +18,7 @@ class DetailSkeleton extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: <Widget>[
           SizedBox(
             height: 46,
             child: Center(child: _Block(width: 200, height: 32)),
@@ -28,11 +28,11 @@ class DetailSkeleton extends StatelessWidget {
           SizedBox(height: dimens.space4),
           const _Block(height: 200),
           SizedBox(height: dimens.space4),
-          for (int row = 0; row < 2; row++) ...[
+          for (int row = 0; row < 2; row++) ...<Widget>[
             if (row > 0) SizedBox(height: dimens.space2),
             Row(
               spacing: dimens.space2,
-              children: [
+              children: <Widget>[
                 for (int i = 0; i < 3 - row; i++)
                   const Expanded(child: _Block(height: 56)),
               ],

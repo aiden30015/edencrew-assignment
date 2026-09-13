@@ -123,10 +123,10 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
 
     for (int i = 0; i < missing.length; i++) {
       switch (results[i]) {
-        case Success(:final value):
+        case Success<StockMetaDto>(:final StockMetaDto value):
           _metas[missing[i]] = value;
           _metaFailures.remove(missing[i]);
-        case Failure():
+        case Failure<StockMetaDto>():
           _metaFailures.add(missing[i]);
       }
     }
@@ -144,14 +144,14 @@ class WatchlistViewModel extends Notifier<WatchlistState> {
     if (!ref.mounted || requestId != _quoteRequestId) return;
 
     switch (result) {
-      case Success(value: final dto):
+      case Success<RealtimeQuotesDto>(value: final RealtimeQuotesDto dto):
         _quotes.addAll(dto.quotes);
         _quoteFailed = false;
         _polling.scheduleNext(
           dto.pollingInterval,
           marketOpen: dto.isMarketOpen,
         );
-      case Failure():
+      case Failure<RealtimeQuotesDto>():
         _quoteFailed = true;
         // 실패해도 화면이 보이는 동안은 같은 간격으로 다시 시도한다.
         _polling.scheduleNext(

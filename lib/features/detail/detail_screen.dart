@@ -110,7 +110,7 @@ class _DetailBodyState extends State<_DetailBody> {
     return NotificationListener<ScrollNotification>(
       onNotification: _onScroll,
       child: CustomScrollView(
-        slivers: [
+        slivers: <Widget>[
           SliverPadding(
             padding: EdgeInsets.fromLTRB(
               dimens.space4,
@@ -121,7 +121,7 @@ class _DetailBodyState extends State<_DetailBody> {
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   PriceHeader(
                     stock: state.stock,
                     selected: state.period,

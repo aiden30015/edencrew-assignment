@@ -11,6 +11,7 @@ import 'package:edencrew_assignment_starter/features/search/search_view_model.da
 import 'package:edencrew_assignment_starter/shared/utils/result.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 
 class _ManualSearchRepository implements StockRepository {
   final Map<String, Completer<Result<List<AutocompleteItemDto>>>> pending =
@@ -55,7 +56,7 @@ void main() {
   test('늦게 도착한 이전 검색어의 응답은 최신 결과를 덮어쓰지 않는다', () async {
     final _ManualSearchRepository repository = _ManualSearchRepository();
     final ProviderContainer container = ProviderContainer.test(
-      overrides: [
+      overrides: <Override>[
         stockRepositoryProvider.overrideWithValue(repository),
         searchViewModelProvider.overrideWith(
           () => SearchViewModel(debounce: Duration.zero),
@@ -71,15 +72,18 @@ void main() {
     viewModel.onQueryChanged('삼성전자');
     await Future<void>.delayed(Duration.zero);
 
-    repository.respond('삼성전자', [_dto('005930', '삼성전자')]);
+    repository.respond('삼성전자', <AutocompleteItemDto>[_dto('005930', '삼성전자')]);
     await Future<void>.delayed(Duration.zero);
-    repository.respond('삼', [_dto('005930', '삼성전자'), _dto('000810', '삼성화재')]);
+    repository.respond('삼', <AutocompleteItemDto>[
+      _dto('005930', '삼성전자'),
+      _dto('000810', '삼성화재'),
+    ]);
     await Future<void>.delayed(Duration.zero);
 
     final SearchState state = container.read(searchViewModelProvider);
     expect(state.query, '삼성전자');
     expect(state.status, SearchStatus.success);
-    expect(state.results.map((SearchResultItem e) => e.id), [
+    expect(state.results.map((SearchResultItem e) => e.id), <String>[
       'domestic:005930',
     ]);
   });

@@ -2,12 +2,13 @@ import 'package:edencrew_assignment_starter/shared/state/favorites_notifier.dart
 import 'package:edencrew_assignment_starter/shared/state/preferences_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   Future<ProviderContainer> launch() async {
     final ProviderContainer container = ProviderContainer(
-      overrides: [
+      overrides: <Override>[
         preferencesProvider.overrideWithValue(
           await SharedPreferences.getInstance(),
         ),

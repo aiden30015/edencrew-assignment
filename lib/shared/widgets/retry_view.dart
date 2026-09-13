@@ -25,8 +25,8 @@ class RetryView extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: dimens.space6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            if (showIcon) ...[
+          children: <Widget>[
+            if (showIcon) ...<Widget>[
               Icon(
                 Icons.wifi_off_rounded,
                 size: 40,

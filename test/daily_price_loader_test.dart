@@ -11,8 +11,8 @@ Future<List<DailyPriceDto>> _load(
   DailyPriceLoader loader,
   int tradingDays,
 ) async => switch (await loader.load('005930', tradingDays)) {
-  Success(:final value) => value,
-  Failure(:final error) => throw error,
+  Success<List<DailyPriceDto>>(:final List<DailyPriceDto> value) => value,
+  Failure<List<DailyPriceDto>>(:final Object error) => throw error,
 };
 
 void main() {
@@ -49,8 +49,8 @@ void main() {
       60,
       refreshLatest: true,
     )) {
-      Success(:final value) => value,
-      Failure(:final error) => throw error,
+      Success<List<DailyPriceDto>>(:final List<DailyPriceDto> value) => value,
+      Failure<List<DailyPriceDto>>(:final Object error) => throw error,
     };
 
     expect(repo.dailyPages, <int>[1, 2, 3, 4, 5, 6, 1]);
@@ -69,8 +69,8 @@ void main() {
       60,
       refreshLatest: true,
     )) {
-      Success(:final value) => value,
-      Failure(:final error) => throw error,
+      Success<List<DailyPriceDto>>(:final List<DailyPriceDto> value) => value,
+      Failure<List<DailyPriceDto>>(:final Object error) => throw error,
     };
 
     expect(repo.dailyPages, <int>[1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6]);

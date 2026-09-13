@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/main_shell.dart';
@@ -12,7 +13,7 @@ Future<void> main() async {
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(
-      overrides: [preferencesProvider.overrideWithValue(preferences)],
+      overrides: <Override>[preferencesProvider.overrideWithValue(preferences)],
       child: const EdencrewAssignmentApp(),
     ),
   );

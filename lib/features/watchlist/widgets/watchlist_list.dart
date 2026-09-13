@@ -30,7 +30,7 @@ class WatchlistList extends StatelessWidget {
     final AppColors colors = context.colors;
 
     return Column(
-      children: [
+      children: <Widget>[
         if (hasError) _ErrorBanner(onRetry: onRetry),
         Expanded(
           child: RefreshIndicator(
@@ -80,7 +80,7 @@ class _DeleteBackground extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             spacing: dimens.space1,
-            children: [
+            children: <Widget>[
               Icon(
                 Icons.star_outline_rounded,
                 size: dimens.iconMd,
@@ -115,7 +115,7 @@ class _ErrorBanner extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.only(left: dimens.space4, right: dimens.space2),
         child: Row(
-          children: [
+          children: <Widget>[
             Icon(
               Icons.error_outline_rounded,
               size: dimens.iconSm,

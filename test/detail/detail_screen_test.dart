@@ -8,6 +8,7 @@ import 'package:edencrew_assignment_starter/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 
 import '../mocks/fake_stock_repository.dart';
 
@@ -21,7 +22,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
+        overrides: <Override>[
           stockRepositoryProvider.overrideWithValue(
             FakeStockRepository(latency: Duration.zero),
           ),
@@ -82,7 +83,7 @@ void main() {
     // 207940은 가격이 7자리(1,043,000)인 종목.
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
+        overrides: <Override>[
           stockRepositoryProvider.overrideWithValue(
             FakeStockRepository(latency: Duration.zero),
           ),
@@ -108,7 +109,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
+        overrides: <Override>[
           stockRepositoryProvider.overrideWithValue(
             FakeStockRepository(latency: Duration.zero),
           ),
@@ -152,7 +153,7 @@ void main() {
     final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
+        overrides: <Override>[
           stockRepositoryProvider.overrideWithValue(
             FakeStockRepository(latency: Duration.zero),
           ),

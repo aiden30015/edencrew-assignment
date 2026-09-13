@@ -39,7 +39,9 @@ class FakeStockRepository implements StockRepository {
   Future<Result<List<AutocompleteItemDto>>> search(String query) async {
     await Future<void>.delayed(latency ~/ 2);
     final String q = query.trim();
-    if (q.isEmpty) return const Success<List<AutocompleteItemDto>>([]);
+    if (q.isEmpty) {
+      return const Success<List<AutocompleteItemDto>>(<AutocompleteItemDto>[]);
+    }
 
     return Success<List<AutocompleteItemDto>>(<AutocompleteItemDto>[
       for (final MapEntry<String, (String, String, int, int, int)> e

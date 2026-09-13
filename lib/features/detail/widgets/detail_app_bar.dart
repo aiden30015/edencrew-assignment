@@ -45,7 +45,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
         // 뒤로 가기는 왼쪽 여백(space4)과 종목명까지의 간격(space3)을 누르는 영역에 포함한다.
         padding: EdgeInsets.only(right: dimens.space4),
         child: Row(
-          children: [
+          children: <Widget>[
             HeaderIconButton(
               icon: Icons.arrow_back,
               color: colors.textSecondary,
@@ -60,7 +60,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   if (name == null)
                     Container(
                       width: 96,

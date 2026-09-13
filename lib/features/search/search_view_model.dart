@@ -86,14 +86,17 @@ class SearchViewModel extends Notifier<SearchState> {
     if (!ref.mounted || requestId != _requestId) return;
 
     state = switch (result) {
-      Success(value: final items) => SearchState(
-        query: query,
-        results: List<SearchResultItem>.unmodifiable(<SearchResultItem>[
-          for (final AutocompleteItemDto dto in items) _toItem(dto, query),
-        ]),
-        status: SearchStatus.success,
-      ),
-      Failure() => state.copyWith(
+      Success<List<AutocompleteItemDto>>(
+        value: final List<AutocompleteItemDto> items,
+      ) =>
+        SearchState(
+          query: query,
+          results: List<SearchResultItem>.unmodifiable(<SearchResultItem>[
+            for (final AutocompleteItemDto dto in items) _toItem(dto, query),
+          ]),
+          status: SearchStatus.success,
+        ),
+      Failure<List<AutocompleteItemDto>>() => state.copyWith(
         results: const <SearchResultItem>[],
         status: SearchStatus.failure,
       ),

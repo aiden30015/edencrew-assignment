@@ -22,7 +22,7 @@ class DailyPriceTable extends StatelessWidget {
     final AppDimens dimens = context.dimens;
 
     return SliverMainAxisGroup(
-      slivers: [
+      slivers: <Widget>[
         SliverPadding(
           padding: EdgeInsets.fromLTRB(
             dimens.space4,
@@ -139,7 +139,7 @@ class _TableRowFrame extends StatelessWidget {
             : null,
       ),
       child: Row(
-        children: [
+        children: <Widget>[
           Expanded(flex: 4, child: date),
           Expanded(
             flex: 9,

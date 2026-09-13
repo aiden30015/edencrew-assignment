@@ -33,7 +33,7 @@ class SearchField extends StatelessWidget {
         ),
       ),
       child: Row(
-        children: [
+        children: <Widget>[
           Icon(Icons.search, size: dimens.iconSm, color: colors.textTertiary),
           SizedBox(width: dimens.space2),
           Expanded(

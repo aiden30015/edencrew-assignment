@@ -58,7 +58,7 @@ class _CandleChartState extends State<CandleChart> {
             )
           : Stack(
               alignment: Alignment.center,
-              children: [
+              children: <Widget>[
                 Positioned.fill(
                   child: Opacity(
                     opacity: widget.isLoading ? 0.4 : 1,
@@ -124,7 +124,7 @@ class _CandleChartState extends State<CandleChart> {
             onLongPressEnd: (_) => setState(() => _selected = null),
             onLongPressCancel: () => setState(() => _selected = null),
             child: Stack(
-              children: [
+              children: <Widget>[
                 Positioned.fill(
                   child: CustomPaint(
                     painter: _CandlePainter(
@@ -398,7 +398,7 @@ class _Tooltip extends StatelessWidget {
     );
 
     TableRow row(String name, String text) => TableRow(
-      children: [
+      children: <Widget>[
         Padding(
           padding: EdgeInsets.only(right: dimens.space2),
           child: Text(name, style: label),
@@ -421,7 +421,7 @@ class _Tooltip extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             Text(
               Format.monthDay(candle.date),
               style: AppTypography.bold13.copyWith(color: colors.textPrimary),
@@ -429,7 +429,7 @@ class _Tooltip extends StatelessWidget {
             SizedBox(height: dimens.space1),
             Table(
               defaultColumnWidth: const IntrinsicColumnWidth(),
-              children: [
+              children: <TableRow>[
                 row('시가', Format.number(candle.open)),
                 row('고가', Format.number(candle.high)),
                 row('저가', Format.number(candle.low)),

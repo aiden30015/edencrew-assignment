@@ -65,7 +65,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       body: SafeArea(
         bottom: false,
         child: Column(
-          children: [
+          children: <Widget>[
             Padding(
               padding: EdgeInsets.fromLTRB(
                 dimens.space4,

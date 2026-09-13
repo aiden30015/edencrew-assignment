@@ -36,7 +36,7 @@ class WatchlistRow extends StatelessWidget {
           ),
         ),
         child: Row(
-          children: [
+          children: <Widget>[
             // 종목명이 길어도 우측 가격 영역은 밀리지 않고 이름만 말줄임됩니다.
             Expanded(
               child: name == null
@@ -47,7 +47,7 @@ class WatchlistRow extends StatelessWidget {
                     )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                      children: <Widget>[
                         Text(
                           name,
                           maxLines: 1,
@@ -74,7 +74,7 @@ class WatchlistRow extends StatelessWidget {
             else
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
+                children: <Widget>[
                   Text(
                     Format.number(quote.price),
                     style: _topLineStyle(colors.textPrimary),
@@ -129,7 +129,7 @@ class _SkeletonLines extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: alignment,
-        children: [
+        children: <Widget>[
           _SkeletonBar(width: topWidth, height: 16),
           const SizedBox(height: 2),
           _SkeletonBar(width: bottomWidth, height: 12),

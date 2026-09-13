@@ -35,7 +35,7 @@ class _MainShellState extends State<MainShell> {
       body: ToastHost(
         child: IndexedStack(
           index: _index,
-          children: [
+          children: <Widget>[
             TickerMode(enabled: _index == 0, child: const WatchlistScreen()),
             TickerMode(enabled: _index == 1, child: const SearchScreen()),
           ],

@@ -44,9 +44,9 @@ class DailyPriceLoader {
     final int lastPage;
     // 1페이지를 먼저 받아 전체 페이지 수(lastPage)를 알아낸다.
     switch (await _page(pages, symbol, 1)) {
-      case Success(:final value):
+      case Success<DailyPricePageDto>(:final DailyPricePageDto value):
         lastPage = value.lastPage;
-      case Failure(:final error):
+      case Failure<DailyPricePageDto>(:final Object error):
         return Failure<List<DailyPriceDto>>(error);
     }
     // 필요한 페이지 수. 10일 단위로 올림하되 lastPage를 넘지 않는다. (25일 → 3페이지)
@@ -70,11 +70,11 @@ class DailyPriceLoader {
           ]);
       for (final Result<DailyPricePageDto> result in results) {
         switch (result) {
-          case Success(:final value):
+          case Success<DailyPricePageDto>(:final DailyPricePageDto value):
             items.addAll(
               value.items.where((DailyPriceDto d) => seen.add(d.localDate)),
             );
-          case Failure(:final error):
+          case Failure<DailyPricePageDto>(:final Object error):
             return Failure<List<DailyPriceDto>>(error);
         }
       }
@@ -99,7 +99,8 @@ class DailyPriceLoader {
 
     final Future<Result<DailyPricePageDto>>? cached = pages[1];
     final bool shifted = switch (await cached) {
-      Success(:final value) => _newestDate(value) != _newestDate(fresh.value),
+      Success<DailyPricePageDto>(:final DailyPricePageDto value) =>
+        _newestDate(value) != _newestDate(fresh.value),
       _ => true,
     };
     if (shifted) pages.clear();

@@ -23,7 +23,7 @@ class PriceHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: context.dimens.space4,
-      children: [
+      children: <Widget>[
         _PriceRow(stock: stock),
         _PeriodTabs(selected: selected, onSelect: onSelect),
       ],
@@ -49,7 +49,7 @@ class _PriceRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
-      children: [
+      children: <Widget>[
         Text(
           Format.number(stock.price),
           style: TextStyle(
@@ -94,7 +94,7 @@ class _PeriodTabs extends StatelessWidget {
 
     return Row(
       spacing: dimens.space1,
-      children: [
+      children: <Widget>[
         for (final ChartPeriod period in ChartPeriod.values)
           Expanded(
             child: Material(

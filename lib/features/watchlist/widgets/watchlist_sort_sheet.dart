@@ -37,7 +37,7 @@ class _WatchlistSortSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        children: <Widget>[
           Padding(
             padding: EdgeInsets.symmetric(
               horizontal: dimens.space6,
@@ -82,7 +82,7 @@ class _SortOption extends StatelessWidget {
         height: dimens.rowMinHeight,
         padding: EdgeInsets.symmetric(horizontal: dimens.space6),
         child: Row(
-          children: [
+          children: <Widget>[
             Expanded(
               child: Text(
                 label,

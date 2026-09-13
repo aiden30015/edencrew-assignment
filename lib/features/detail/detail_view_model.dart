@@ -86,11 +86,14 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
     // 종목 정보 · 현재가가 없으면 화면을 그릴 수 없어 전체 실패.
     // 일별 시세만 실패하면 헤더 · 요약은 보여주고 차트 자리에 '다시 시도'를 띄운다.
     final List<DailyPriceDto> days = switch (daily) {
-      Success(value: final d) => d,
-      Failure() => const <DailyPriceDto>[],
+      Success<List<DailyPriceDto>>(value: final List<DailyPriceDto> d) => d,
+      Failure<List<DailyPriceDto>>() => const <DailyPriceDto>[],
     };
     return switch ((meta, quotes)) {
-      (Success(value: final m), Success(value: final q))
+      (
+        Success<StockMetaDto>(value: final StockMetaDto m),
+        Success<RealtimeQuotesDto>(value: final RealtimeQuotesDto q),
+      )
           when q.quotes[symbol] != null =>
         _start(
           m,
@@ -103,7 +106,8 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
             hasPeriodError: daily is Failure,
           ),
         ),
-      (Failure(:final error), _) || (_, Failure(:final error)) => throw error,
+      (Failure<StockMetaDto>(:final Object error), _) ||
+      (_, Failure<RealtimeQuotesDto>(:final Object error)) => throw error,
       _ => throw StateError('no quote: $symbol'),
     };
   }
@@ -128,12 +132,13 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
     if (latest == null || latest.period != period) return;
 
     state = AsyncData<DetailState>(switch (result) {
-      Success(value: final daily) => latest.copyWith(
-        candles: _candles(daily),
-        rows: _rows(daily),
-        isPeriodLoading: false,
-      ),
-      Failure() => latest.copyWith(
+      Success<List<DailyPriceDto>>(value: final List<DailyPriceDto> daily) =>
+        latest.copyWith(
+          candles: _candles(daily),
+          rows: _rows(daily),
+          isPeriodLoading: false,
+        ),
+      Failure<List<DailyPriceDto>>() => latest.copyWith(
         isPeriodLoading: false,
         hasPeriodError: true,
       ),
@@ -165,7 +170,7 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
     );
     if (!ref.mounted) return;
     switch (result) {
-      case Success(value: final dto):
+      case Success<RealtimeQuotesDto>(value: final RealtimeQuotesDto dto):
         final RealtimeQuoteDto? quote = dto.quotes[symbol];
         final DetailState? current = state.value;
         if (quote != null && current != null) {
@@ -177,7 +182,7 @@ class DetailViewModel extends AsyncNotifier<DetailState> {
           dto.pollingInterval,
           marketOpen: dto.isMarketOpen,
         );
-      case Failure():
+      case Failure<RealtimeQuotesDto>():
         _polling.scheduleNext(
           RealtimeQuotesDto.defaultPollingInterval,
           marketOpen: true,

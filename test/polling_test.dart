@@ -5,6 +5,7 @@ import 'package:edencrew_assignment_starter/shared/state/preferences_provider.da
 import 'package:edencrew_assignment_starter/shared/utils/polling.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'mocks/recording_stock_repository.dart';
@@ -49,7 +50,7 @@ void main() {
     });
     final RecordingStockRepository repository = RecordingStockRepository();
     final ProviderContainer container = ProviderContainer(
-      overrides: [
+      overrides: <Override>[
         stockRepositoryProvider.overrideWithValue(repository),
         preferencesProvider.overrideWithValue(
           await SharedPreferences.getInstance(),

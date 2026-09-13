@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // 실제 기기(에뮬레이터)에서 실제 네이버 응답으로 앱 전체 흐름을 확인하는 종합 테스트.
@@ -56,7 +57,9 @@ void main() {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [preferencesProvider.overrideWithValue(preferences)],
+        overrides: <Override>[
+          preferencesProvider.overrideWithValue(preferences),
+        ],
         child: const EdencrewAssignmentApp(),
       ),
     );

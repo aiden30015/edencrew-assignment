@@ -5,6 +5,7 @@ import 'package:edencrew_assignment_starter/shared/state/preferences_provider.da
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../mocks/fake_stock_repository.dart';
@@ -14,7 +15,7 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     final ProviderContainer container = ProviderContainer(
-      overrides: [preferencesProvider.overrideWithValue(preferences)],
+      overrides: <Override>[preferencesProvider.overrideWithValue(preferences)],
     );
     addTearDown(container.dispose);
     final RecentSearchesNotifier recent = container.read(
@@ -45,7 +46,7 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
+        overrides: <Override>[
           stockRepositoryProvider.overrideWithValue(
             FakeStockRepository(latency: Duration.zero),
           ),

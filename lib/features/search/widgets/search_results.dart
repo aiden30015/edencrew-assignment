@@ -76,7 +76,7 @@ class SearchResults extends StatelessWidget {
     }
 
     return Stack(
-      children: [
+      children: <Widget>[
         ListView.builder(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           itemCount: state.results.length,
@@ -128,7 +128,7 @@ class _RecentSearches extends StatelessWidget {
 
     return ListView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      children: [
+      children: <Widget>[
         Padding(
           padding: EdgeInsets.fromLTRB(
             dimens.space4,
@@ -150,7 +150,7 @@ class _RecentSearches extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(left: dimens.space4),
                 child: Row(
-                  children: [
+                  children: <Widget>[
                     Icon(
                       Icons.search,
                       size: dimens.iconSm,
@@ -195,7 +195,7 @@ class _ErrorView extends StatelessWidget {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: <Widget>[
           const EmptyState(
             icon: Icons.error_outline,
             title: '검색하지 못했습니다',
@@ -248,12 +248,12 @@ class _ResultRow extends StatelessWidget {
           ),
         ),
         child: Row(
-          children: [
+          children: <Widget>[
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   _HighlightedName(name: item.name, highlight: item.highlight),
                   Text(
                     '${item.symbol} · ${item.market}',
@@ -289,8 +289,8 @@ class _HighlightedName extends StatelessWidget {
     return Text.rich(
       TextSpan(
         children: range == null
-            ? [TextSpan(text: name)]
-            : [
+            ? <InlineSpan>[TextSpan(text: name)]
+            : <InlineSpan>[
                 TextSpan(text: range.textBefore(name)),
                 TextSpan(
                   text: range.textInside(name),

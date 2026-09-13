@@ -34,7 +34,7 @@ class WatchlistAppBar extends StatelessWidget implements PreferredSizeWidget {
       // 새로고침은 정렬 칩과의 간격 · 오른쪽 여백(space4)을 누르는 영역에 포함한다.
       padding: EdgeInsets.only(left: dimens.space4),
       child: Row(
-        children: [
+        children: <Widget>[
           Expanded(
             child: Text(
               '관심',
@@ -48,7 +48,7 @@ class WatchlistAppBar extends StatelessWidget implements PreferredSizeWidget {
               // 칩 높이를 44까지 늘려 누르기 쉽게 한다. 글자 위치는 헤더 가운데 그대로.
               padding: EdgeInsets.symmetric(vertical: dimens.space3),
               child: Row(
-                children: [
+                children: <Widget>[
                   Text(
                     sort.label,
                     style: AppTypography.bold13.copyWith(

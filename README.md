@@ -202,6 +202,10 @@ test/mocks/    테스트용 가짜 저장소 (FakeStockRepository, RecordingStoc
 - 최근 검색어 목록, 스와이프 삭제 배경, 차트 축 · 거래량 · 툴팁은 시안에 없어 기존 토큰으로 구성했습니다.
 - 일별 시세 표는 10행부터 보여주고 스크롤하면 **선택한 기간 안에서** 10행씩 펼칩니다. 기간을 넘지 않으므로 '탭을 바꾸면 표 기간도 바뀐다'는 요구사항은 그대로입니다.
 
+## 과제 2 (Lucy Studio · `목표가 알림`)
+
+**진행하지 못했습니다.** Lucy Studio 툴을 열면 서버 요청이 유효하지 않다는 에러가 나서 프로젝트 작업 화면으로 넘어가지 못했습니다. 그래서 `cloneProject/assets` 결과물을 만들지 못했습니다.
+
 ## 막혔던 지점과 접근
 
 - **EUC-KR 응답**: 실시간 시세 · 일별 시세가 `charset=EUC-KR`로 옵니다. `http`의 `response.body`는 모르는 charset을 latin1로 읽어서, `bodyBytes`를 `charset` 패키지로 직접 디코딩했습니다.

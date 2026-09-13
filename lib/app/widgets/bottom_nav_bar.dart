@@ -22,8 +22,6 @@ class BottomNavBar extends StatelessWidget {
     required this.onTap,
   });
 
-  static const double _height = 63;
-
   final List<BottomNavItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -46,7 +44,7 @@ class BottomNavBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: _height,
+          height: dimens.tabBarHeight,
           child: Row(
             children: <Widget>[
               for (int i = 0; i < items.length; i++)

@@ -2,6 +2,7 @@ import 'package:edencrew_assignment_starter/data/repository/stock_repository.dar
 import 'package:edencrew_assignment_starter/features/detail/detail_screen.dart';
 import 'package:edencrew_assignment_starter/features/detail/widgets/candle_chart.dart';
 import 'package:edencrew_assignment_starter/features/detail/widgets/daily_price_table.dart';
+import 'package:edencrew_assignment_starter/main.dart';
 import 'package:edencrew_assignment_starter/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,6 +66,36 @@ void main() {
     await tester.pumpAndSettle();
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -3000));
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('글자 크기 최대(1.3배)에서도 긴 가격 · 종목명이 넘치지 않는다', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    tester.platformDispatcher.textScaleFactorTestValue =
+        EdencrewAssignmentApp.maxTextScale;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    // 207940은 가격이 7자리(1,043,000)인 종목.
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          stockRepositoryProvider.overrideWithValue(
+            FakeStockRepository(latency: Duration.zero),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark,
+          home: const DetailScreen(symbol: '207940'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('1,043,000'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('상세 화면에서 별을 누르면 등록 · 해제 토스트가 뜬다', (WidgetTester tester) async {

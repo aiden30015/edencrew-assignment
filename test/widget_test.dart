@@ -32,4 +32,26 @@ void main() {
 
     await tester.pumpAndSettle(const Duration(seconds: 1));
   });
+
+  testWidgets('기기 글자 크기가 커도 앱 안에서는 1.3배까지만 키운다', (WidgetTester tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          stockRepositoryProvider.overrideWithValue(
+            FakeStockRepository(latency: Duration.zero),
+          ),
+        ],
+        child: const EdencrewAssignmentApp(),
+      ),
+    );
+
+    final BuildContext context = tester.element(find.byType(BottomNavBar));
+    expect(
+      MediaQuery.textScalerOf(context).scale(10),
+      10 * EdencrewAssignmentApp.maxTextScale,
+    );
+  });
 }

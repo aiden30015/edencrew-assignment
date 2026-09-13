@@ -1,7 +1,30 @@
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
 
-// 일별 시세 한 페이지(최대 10거래일, 최신 날짜가 앞). 상세 화면의 차트 · 표에 쓴다.
+// 일별 시세 한 행(하루치). 날짜는 yyyyMMdd로 정규화한다.
+class DailyPriceDto {
+  const DailyPriceDto({
+    required this.localDate,
+    required this.closePrice,
+    required this.changePrice,
+    required this.openPrice,
+    required this.highPrice,
+    required this.lowPrice,
+    required this.accumulatedTradingVolume,
+  });
+
+  final String localDate;
+  final int closePrice;
+
+  final int changePrice;
+  final int openPrice;
+  final int highPrice;
+  final int lowPrice;
+  final int accumulatedTradingVolume;
+}
+
+// 일별 시세 응답 한 페이지 = 행 목록(최대 10거래일, 최신 날짜가 앞) + 마지막 페이지 번호.
+// lastPage는 행이 아니라 페이지에 딸린 값이라 따로 묶는다. 로더가 lastPage를 넘는 페이지를 요청하지 않는 데 쓴다.
 class DailyPricePageDto {
   const DailyPricePageDto({required this.items, required this.lastPage});
 
@@ -73,25 +96,4 @@ class DailyPricePageDto {
     if (href == null) return null;
     return int.tryParse(Uri.parse(href).queryParameters['page'] ?? '');
   }
-}
-
-class DailyPriceDto {
-  const DailyPriceDto({
-    required this.localDate,
-    required this.closePrice,
-    required this.changePrice,
-    required this.openPrice,
-    required this.highPrice,
-    required this.lowPrice,
-    required this.accumulatedTradingVolume,
-  });
-
-  final String localDate;
-  final int closePrice;
-
-  final int changePrice;
-  final int openPrice;
-  final int highPrice;
-  final int lowPrice;
-  final int accumulatedTradingVolume;
 }

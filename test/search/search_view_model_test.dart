@@ -87,4 +87,60 @@ void main() {
       'domestic:005930',
     ]);
   });
+
+  test('디바운스 대기 중에 도착한 이전 검색어 응답은 버리고, 이전 결과를 둔 채 새 검색을 기다린다', () async {
+    const Duration debounce = Duration(milliseconds: 20);
+    Future<void> afterDebounce() =>
+        Future<void>.delayed(debounce + const Duration(milliseconds: 10));
+
+    final _ManualSearchRepository repository = _ManualSearchRepository();
+    final ProviderContainer container = ProviderContainer.test(
+      overrides: <Override>[
+        stockRepositoryProvider.overrideWithValue(repository),
+        searchViewModelProvider.overrideWith(
+          () => SearchViewModel(debounce: debounce),
+        ),
+      ],
+    );
+    final SearchViewModel viewModel = container.read(
+      searchViewModelProvider.notifier,
+    );
+    SearchState state() => container.read(searchViewModelProvider);
+    List<String> ids() => <String>[
+      for (final SearchResultItem e in state().results) e.id,
+    ];
+
+    // '삼' 결과가 화면에 있다.
+    viewModel.onQueryChanged('삼');
+    await afterDebounce();
+    repository.respond('삼', <AutocompleteItemDto>[
+      _dto('005930', '삼성전자'),
+      _dto('000810', '삼성화재'),
+    ]);
+    await Future<void>.delayed(Duration.zero);
+    expect(ids(), <String>['domestic:005930', 'domestic:000810']);
+
+    // '삼성' 요청이 나간 뒤 '삼성전'을 입력했고, 디바운스 대기 중에 '삼성' 응답이 도착한다.
+    viewModel.onQueryChanged('삼성');
+    await afterDebounce();
+    viewModel.onQueryChanged('삼성전');
+    repository.respond('삼성', <AutocompleteItemDto>[_dto('000810', '삼성화재')]);
+    await Future<void>.delayed(Duration.zero);
+
+    // 늦은 '삼성' 응답은 버리고, 이전('삼') 결과를 둔 채 '삼성전'을 기다린다.
+    expect(state().query, '삼성전');
+    expect(state().status, SearchStatus.loading);
+    expect(ids(), <String>['domestic:005930', 'domestic:000810']);
+
+    // 백스페이스로 '삼성'이 되면 '삼성전' 검색은 취소되고 '삼성'을 다시 검색한다.
+    viewModel.onQueryChanged('삼성');
+    await afterDebounce();
+    expect(repository.pending.containsKey('삼성전'), isFalse);
+    repository.respond('삼성', <AutocompleteItemDto>[_dto('005930', '삼성전자')]);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(state().query, '삼성');
+    expect(state().status, SearchStatus.success);
+    expect(ids(), <String>['domestic:005930']);
+  });
 }

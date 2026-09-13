@@ -59,12 +59,15 @@ class SearchViewModel extends Notifier<SearchState> {
     if (query == state.query) return;
 
     _debounceTimer?.cancel();
+    // 입력이 바뀌면 진행 중인 이전 검색어의 응답은 버린다. 지금 입력 중인 검색어가 우선이다.
+    // 요청을 보낼 때(디바운스 후)만 번호를 올리면, 디바운스 동안 도착한 이전 응답이 새 입력을 덮어쓴다.
+    _requestId++;
     if (query.isEmpty) {
-      _requestId++;
       state = const SearchState();
       return;
     }
 
+    // 새 결과가 올 때까지 이전 결과는 그대로 두고 진행 막대만 띄운다(화면이 깜빡이지 않게).
     state = state.copyWith(query: query, status: SearchStatus.loading);
     _debounceTimer = Timer(debounce, () => _search(query));
   }

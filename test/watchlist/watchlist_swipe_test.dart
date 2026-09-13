@@ -1,5 +1,5 @@
 import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
-import 'package:edencrew_assignment_starter/main.dart';
+import 'package:edencrew_assignment_starter/app/app.dart';
 import 'package:edencrew_assignment_starter/shared/state/favorites_notifier.dart';
 import 'package:edencrew_assignment_starter/shared/state/preferences_provider.dart';
 import 'package:flutter/material.dart';

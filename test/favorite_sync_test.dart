@@ -1,7 +1,7 @@
 import 'package:edencrew_assignment_starter/app/widgets/bottom_nav_bar.dart';
 import 'package:edencrew_assignment_starter/data/repository/stock_repository.dart';
 import 'package:edencrew_assignment_starter/features/detail/detail_screen.dart';
-import 'package:edencrew_assignment_starter/main.dart';
+import 'package:edencrew_assignment_starter/app/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

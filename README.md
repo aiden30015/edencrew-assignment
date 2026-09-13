@@ -74,12 +74,13 @@ lib/
   data/        dto/ (서버 응답 그대로), repository/ (저장소 인터페이스 · 네이버 구현, 일별 시세 페이지 로더)
   features/    watchlist/ · search/ · detail/ — 화면, ViewModel(Notifier), UI 모델, 위젯
   shared/      Result, 포맷, 등락 방향, 공통 위젯(토스트 · 빈 상태 등), 관심 목록 · 저장소 상태
-  app/         하단 탭 셸
+  app/         앱 조립 — MaterialApp · 테마 · 글자 크기 제한(app.dart), 하단 탭 셸(main_shell.dart)
   theme/       스타터 디자인 토큰 (값은 수정하지 않음, 서체 조합만 추가)
 test/mocks/    테스트용 가짜 저장소 (FakeStockRepository, RecordingStockRepository)
 ```
 
 - 데이터 계층은 종류별, 화면은 기능별로 묶었습니다.
+- 화면 이동은 탭 2개 + 상세 push 1개뿐이고 딥링크 · 웹 URL이 없어서 router 패키지 없이 `IndexedStack` 탭 셸과 `DetailScreen.route(symbol)`로 처리합니다. 탭을 `IndexedStack`으로 살려 두기 때문에 안 보이는 탭의 자동 갱신을 `TickerMode`로 멈추고, 탭 화면마다 토스트 위치를 따로 잡을 수 있습니다. 딥링크(예: 목표가 알림 → 종목 상세)가 생기거나 화면이 늘어 기능끼리 서로 import하는 게 부담되면 go_router `StatefulShellRoute`로 옮길 생각입니다.
 - 타입은 지역 변수 · 컬렉션 리터럴 · 람다 파라미터 · 패턴(`Success<StockMetaDto>(...)`)까지 모두 적습니다. 리뷰로만 지키면 빠지는 곳이 생겨서 `analysis_options.yaml`에 `always_specify_types` 린트를 켜 `flutter analyze`가 잡게 했습니다.
 - **DTO와 UI 모델을 분리**했습니다. DTO는 서버 응답을 그대로 담고, 등락액 · 등락률 · 시가총액 계산과 여러 DTO 합치기(메타 + 시세)는 UI 모델의 `from()`에서 합니다. 서버 모양이 바뀌어도 위젯은 그대로입니다.
 - 저장소는 예외를 던지지 않고 `Result`(`Success` / `Failure`)를 돌려줍니다. 뷰모델이 `switch`로 받아서 화면마다 맞는 상태로 바꿉니다.

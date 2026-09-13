@@ -13,6 +13,10 @@ class DailyPriceLoader {
 
   static const int pageSize = 10;
 
+  // 한 번에 보내는 페이지 요청 수. 1년(25페이지)을 한꺼번에 보내면 같은 호스트에 요청이 몰려
+  // 느려지거나 차단될 수 있어서 나눠 보낸다.
+  static const int maxConcurrent = 4;
+
   // 생성자로 주입받아 테스트에서 가짜 저장소로 바꿀 수 있다. 밖에서는 load()만 쓰도록 private.
   final StockRepository _repository;
 
@@ -48,21 +52,31 @@ class DailyPriceLoader {
     // 필요한 페이지 수. 10일 단위로 올림하되 lastPage를 넘지 않는다. (25일 → 3페이지)
     final int needed = min((tradingDays / pageSize).ceil(), lastPage);
 
-    // 필요한 페이지를 동시에 요청한다. 1페이지는 캐시에 있어 다시 요청하지 않는다.
-    final List<Result<DailyPricePageDto>> results = await Future.wait(
-      <Future<Result<DailyPricePageDto>>>[
-        for (int page = 1; page <= needed; page++) _page(pages, symbol, page),
-      ],
-    );
-
-    // 페이지를 순서대로 합친다. 하나라도 실패하면 전체 실패.
+    // 필요한 페이지를 [maxConcurrent]개씩 요청한다. 캐시에 있는 페이지는 다시 요청하지 않는다.
+    // 페이지를 순서대로 합치고, 하나라도 실패하면 남은 페이지는 요청하지 않고 전체 실패.
     final List<DailyPriceDto> items = <DailyPriceDto>[];
-    for (final Result<DailyPricePageDto> result in results) {
-      switch (result) {
-        case Success(:final value):
-          items.addAll(value.items);
-        case Failure(:final error):
-          return Failure<List<DailyPriceDto>>(error);
+    // 캐시된 앞 페이지와 새로 받은 뒤 페이지 사이에 새 거래일 행이 생기면 경계에서 한 행씩 밀려
+    // 같은 날짜가 두 번 온다. 날짜로 한 번만 남긴다.
+    final Set<String> seen = <String>{};
+    for (int start = 1; start <= needed; start += maxConcurrent) {
+      final List<Result<DailyPricePageDto>> results =
+          await Future.wait(<Future<Result<DailyPricePageDto>>>[
+            for (
+              int page = start;
+              page <= min(start + maxConcurrent - 1, needed);
+              page++
+            )
+              _page(pages, symbol, page),
+          ]);
+      for (final Result<DailyPricePageDto> result in results) {
+        switch (result) {
+          case Success(:final value):
+            items.addAll(
+              value.items.where((DailyPriceDto d) => seen.add(d.localDate)),
+            );
+          case Failure(:final error):
+            return Failure<List<DailyPriceDto>>(error);
+        }
       }
     }
     return Success<List<DailyPriceDto>>(items.take(tradingDays).toList());
@@ -97,6 +111,7 @@ class DailyPriceLoader {
 
   // 캐시에 있으면 재사용하고, 없으면 요청해서 캐시에 넣는다.
   // 실패한 페이지는 캐시에서 지워서 다음 호출 때 다시 받는다.
+  // 그 사이 캐시가 비워지고 같은 번호로 새 요청이 들어갔을 수 있어서, 같은 요청일 때만 지운다.
   Future<Result<DailyPricePageDto>> _page(
     Map<int, Future<Result<DailyPricePageDto>>> pages,
     String symbol,
@@ -106,7 +121,10 @@ class DailyPriceLoader {
       final Future<Result<DailyPricePageDto>> future = _repository
           .fetchDailyPrices(symbol, page);
       future.then((Result<DailyPricePageDto> result) {
-        if (result is Failure<DailyPricePageDto>) pages.remove(page);
+        if (result is Failure<DailyPricePageDto> &&
+            identical(pages[page], future)) {
+          pages.remove(page);
+        }
       });
       return future;
     });

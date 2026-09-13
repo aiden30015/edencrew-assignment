@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:edencrew_assignment_starter/data/dto/daily_price_dto.dart';
 import 'package:edencrew_assignment_starter/data/repository/daily_price_loader.dart';
 import 'package:edencrew_assignment_starter/shared/utils/result.dart';
@@ -102,6 +104,94 @@ void main() {
     await loader.load('999999', 20);
     expect(repo.dailyPages, <int>[1, 1]);
   });
+
+  test('페이지는 maxConcurrent개씩 나눠 요청한다', () async {
+    final _ConcurrencyRepository repo = _ConcurrencyRepository();
+    final DailyPriceLoader loader = DailyPriceLoader(repo);
+
+    expect(await _load(loader, 245), hasLength(245));
+    expect(repo.dailyPages, <int>[for (int p = 1; p <= 25; p++) p]);
+    expect(repo.maxInFlight, DailyPriceLoader.maxConcurrent);
+  });
+
+  test('캐시된 앞 페이지와 새로 받은 뒤 페이지 사이에 행이 밀려도 날짜가 겹치지 않는다', () async {
+    final _ShiftingRepository repo = _ShiftingRepository();
+    final DailyPriceLoader loader = DailyPriceLoader(repo);
+    await _load(loader, 20);
+
+    // 탭을 바꾸기 전에 새 거래일 행이 생겨 서버의 모든 페이지가 한 행씩 밀렸다.
+    repo.shifted = true;
+    final List<DailyPriceDto> days = await _load(loader, 60);
+
+    final List<String> dates = <String>[
+      for (final DailyPriceDto d in days) d.localDate,
+    ];
+    expect(dates.toSet(), hasLength(dates.length));
+  });
+}
+
+// 동시에 진행 중인 일별 시세 요청 수의 최댓값을 기록한다.
+class _ConcurrencyRepository extends RecordingStockRepository {
+  int _inFlight = 0;
+  int maxInFlight = 0;
+
+  @override
+  Future<Result<DailyPricePageDto>> fetchDailyPrices(
+    String symbol,
+    int page,
+  ) async {
+    _inFlight++;
+    maxInFlight = max(maxInFlight, _inFlight);
+    try {
+      return await super.fetchDailyPrices(symbol, page);
+    } finally {
+      _inFlight--;
+    }
+  }
+}
+
+// [shifted]면 맨 앞에 새 거래일 행이 붙어 모든 페이지가 한 행씩 밀린 응답을 준다.
+class _ShiftingRepository extends RecordingStockRepository {
+  bool shifted = false;
+
+  @override
+  Future<Result<DailyPricePageDto>> fetchDailyPrices(
+    String symbol,
+    int page,
+  ) async {
+    final Result<DailyPricePageDto> result = await super.fetchDailyPrices(
+      symbol,
+      page,
+    );
+    if (!shifted || result is! Success<DailyPricePageDto>) return result;
+    final List<DailyPriceDto> items = result.value.items;
+
+    final DailyPriceDto carried;
+    if (page == 1) {
+      final DailyPriceDto top = items.first;
+      carried = DailyPriceDto(
+        localDate: '29991231',
+        closePrice: top.closePrice,
+        changePrice: top.changePrice,
+        openPrice: top.openPrice,
+        highPrice: top.highPrice,
+        lowPrice: top.lowPrice,
+        accumulatedTradingVolume: top.accumulatedTradingVolume,
+      );
+    } else {
+      final Result<DailyPricePageDto> previous = await super.fetchDailyPrices(
+        symbol,
+        page - 1,
+      );
+      carried = (previous as Success<DailyPricePageDto>).value.items.last;
+    }
+    return Success<DailyPricePageDto>(
+      DailyPricePageDto(
+        items: <DailyPriceDto>[carried, ...items.take(items.length - 1)],
+        lastPage: result.value.lastPage,
+      ),
+    );
+  }
 }
 
 // 1페이지 응답을 바꿔 장중 갱신(같은 날짜, 다른 종가)과 새 거래일(맨 앞에 행 추가)을 흉내 낸다.

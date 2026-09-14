@@ -232,7 +232,7 @@ test/mocks/    테스트용 가짜 저장소 (FakeStockRepository, RecordingStoc
 ### 확인한 것
 
 - Lucy Studio 미리보기: 빈 상태 → `+` → 다이얼로그 → 등록 → 목록 추가 흐름
-- 실제 기기(iPhone, Lucy Player): SafeArea로 헤더가 상태바 아래에 오는 것, `+` → 다이얼로그, 매수 · 매도 등록과 목표가 색 구분
+- 실제 기기(iPhone, Lucy Player): SafeArea로 헤더가 상태바 아래에 오는 것, `+` → 다이얼로그, 빈 값 · 숫자 아님 오류 문구, 매수 · 매도 등록과 목표가 색 구분, 다시 열면 입력칸 초기화, `x`로 추가 없이 닫기
 
 ### Figma와 다르게 구현한 부분
 
@@ -248,7 +248,6 @@ test/mocks/    테스트용 가짜 저장소 (FakeStockRepository, RecordingStoc
 
 ### 막혔던 지점
 
-- **Lucy Studio 로그인 · 서버 요청 에러**: 처음에는 서버 요청이 유효하지 않다는 에러로 작업 화면에 들어가지 못했고, 다시 로그인한 뒤 진행했습니다.
 - **기기에서만 안 보이는 아이콘 · 다이얼로그**: 미리보기와 기기를 나눠 보고, 튜토리얼 원본 페이지를 같은 기기로 보내 비교해서 저희 파일이 아니라 Player 쪽 제한임을 확인했습니다. Logger에는 Player 연결 오류(`dataChannelClose() peerConnection is null`)가 찍혔습니다. 커밋 · 푸시 후에도 같았습니다.
 
 ## 막혔던 지점과 접근
